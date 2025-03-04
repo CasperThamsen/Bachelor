@@ -11,7 +11,7 @@ def main():
     # ic(img)
     img = (img * blur).astype(np.uint8)
     # ic(img)
-    
+    #unitycoin clean bob lesson1
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
                                      kernel_size=120,   #130
                                      scale_factor=100)
@@ -27,46 +27,34 @@ def main():
 
     #Tuple unpacking
     #ic(markers) #orientation, quality has been put into function to handle printing values for multiple markers
-    orient, number_of_markers, quality_q, location = mt.detect_multiple_markers(frame=img[:, :, 1])
+    poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
     #distance_between_markers, summed_distances, middle_marker = mt.numerate_markers(frame=img[:, :, 1])
 
-    r = 125
+    r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
     
     # IC TESTS---------------------------------------------------
-    #Multiple markers
-    ic(number_of_markers,np.rad2deg(orient),quality_q,location)
+
+    ic(poses, number_of_markers)
     #ic(distance_between_markers, summed_distances)
     #location of middle marker
     # ic(location[middle_marker])
     # ic(middle_marker)
-    # ic(quality_q)
 
 
 
-    # Single marker test
-    ic(mt.quality)
-    # ic(mt.pose)
-    # ic(np.rad2deg(mt.orientation))
+    for pose in poses:
 
-    #print("markers: ", mt.detect_multiple_markers(frame=img[:, :, 1]))
-
-
-    for loc,ori in zip(location,orient):
-
-        cv2.circle(img, (int(loc[0]), int(loc[1])), 25, (0, 0, 255), 1)
+        cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
         for k in range (4):
-            cv2.circle(img, (int(loc[0] + r * np.cos(ori+k*np.pi/2)), int(loc[1] + r * np.sin(ori+k*np.pi/2))), 25, (0, 0, 255), 1)
+            cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
+     
     cv2.imshow("output", img)
+
+
     while True:
-        key = cv2.waitKey(0)  # Wait indefinitely for a keypress
-        if key == ord('q'):   # Check if the key pressed is 'q'
+        key = cv2.waitKey(0)  
+        if key == ord('q'):   
             break
-    # while True:
-    #     key = cv2.waitKey(0)  # Wait indefinitely for a keypress
-    #     if key == ord('q'):   # Check if the key pressed is 'q'
-    #         break
-
-
 
 
 

@@ -6,7 +6,7 @@ img = cv2.imread('/root/workspace/bachelor/nFoldMark/4.JPG', cv2.IMREAD_COLOR)
 height, width = img.shape[:2]
 
 # Orientation obtained from Fourier transform analysis
-orientation = -22.28743197
+orientation = -22.327133952216943
 # Compute the rotation matrix
 rotation_matrix = cv2.getRotationMatrix2D((width//2, height//2), -orientation, 1.0)
 
