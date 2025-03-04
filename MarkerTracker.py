@@ -211,7 +211,6 @@ class MarkerTracker:
             # Mask the detected marker in the temporary frame
             cv2.circle(temp_frame, (int(markers.x), int(markers.y)), self.kernel_size, (255, 255, 255), -1)
         number_of_markers = len(poses)
-        cv2.imwrite('/root/workspace/bachelor/nFoldMark/processed_image_white.jpg', temp_frame)
     
         return poses, number_of_markers
     
