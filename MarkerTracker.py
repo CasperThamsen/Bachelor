@@ -244,6 +244,25 @@ class MarkerTracker:
         return summed_distances, middle_marker
     
 
+    def numerate_markers(self,frame):
+        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers
+        summed_distances, middle_marker = self.distances_between_markers(frame)
+        poses, number_of_markers = self.detect_multiple_markers(frame)
+        
+        #lambda giver hver element i (range(len(number_of_markers))) en værdi fra summed_distances, hvorefter sorted sorterer listen af værdier
+        sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
+        
+        #konverterer sorted_index index værdier til index værdier i poses
+        for i, index in enumerate(sorted_index):
+            #sætter order til i, så hvis sorted_index = [0,3], får poses[3] markør nummer 0
+            poses[index].order = i
+
+        return poses, sorted_index
+
+        
+
+    
+
     
         
 
