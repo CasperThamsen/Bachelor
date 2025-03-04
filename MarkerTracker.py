@@ -192,24 +192,24 @@ class MarkerTracker:
         return bright_regions, dark_regions
 
 
-
+    #Returns a list of the poses of every detected marker.
     def detect_multiple_markers(self, frame):
         poses = []
         temp_frame = frame.copy()
         reference_intensity = None
 
         while True:
-            markers = self.locate_marker(temp_frame)
-            marker_intensity = self.frame_sum_squared[int(markers.y), int(markers.x)]
+            marker = self.locate_marker(temp_frame)
+            marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
             if marker_intensity / reference_intensity <= 0.5:
                 break
 
-            poses.append(markers)
+            poses.append(marker)
             # Mask the detected marker in the temporary frame
-            cv2.circle(temp_frame, (int(markers.x), int(markers.y)), self.kernel_size, (255, 255, 255), -1)
+            cv2.circle(temp_frame, (int(marker.x), int(marker.y)), self.kernel_size, (255, 255, 255), -1)
         number_of_markers = len(poses)
     
         return poses, number_of_markers
@@ -220,6 +220,7 @@ class MarkerTracker:
 
 
     #laver en liste af lister, hvor hver liste indeholder afstanden mellem alle markører til hinanden
+    #Returns a list of distances between markers summed.
     def distances_between_markers(self, frame):
         poses, number_of_markers = self.detect_multiple_markers(frame)
         if number_of_markers == 0:
@@ -233,8 +234,7 @@ class MarkerTracker:
                     distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
 
         summed_distances = [sum(distance) for distance in distance_between_markers]
-        
-        
+
         # irrelevant code?
         # summed_distances_len = len(summed_distances)
         # middle_marker = 0
@@ -242,10 +242,9 @@ class MarkerTracker:
         #     if summed_distances[k] < summed_distances[middle_marker]:
         #         middle_marker = k
 
-
         return summed_distances
     
-
+    #Numerates the markers based on the summed distances between them
     def numerate_markers(self,frame):
         #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers
         summed_distances = self.distances_between_markers(frame)
@@ -254,7 +253,13 @@ class MarkerTracker:
         sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
         for i, index in enumerate(sorted_index):
             poses[index].order = i
-
+        return poses
+    
+    def numerate_markers_orientation(self,frame):
+        poses, number_of_markers = self.detect_multiple_markers(frame)
+        sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
+        for i, index in enumerate(sorted_index):
+            poses[index].order = i
         return poses
 
         
