@@ -25,15 +25,12 @@ def main():
 
     #Tuple unpacking
     #ic(markers) #orientation, quality has been put into function to handle printing values for multiple markers
-    poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
-    summed_distances, middle_marker = mt.distances_between_markers(frame=img[:, :, 1])
-    poses, sorted_index = mt.numerate_markers(frame = img[:, :, 1])
+    hej, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
+    summed_distances = mt.distances_between_markers(frame=img[:, :, 1])
+    poses = mt.numerate_markers(frame = img[:, :, 1])
     
     # IC TESTS---------------------------------------------------
-
-    ic(poses, number_of_markers, summed_distances, middle_marker, sorted_index)
-    #location of middle marker
-    ic(poses[middle_marker].x, poses[middle_marker].y)
+    ic(poses, number_of_markers, summed_distances)
 
 
     r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
@@ -42,6 +39,7 @@ def main():
         cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
         for k in range (4):
             cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
+            cv2.putText(img, str(pose.order), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
      
     cv2.imshow("output", img)
 

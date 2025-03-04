@@ -233,27 +233,29 @@ class MarkerTracker:
                     distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
 
         summed_distances = [sum(distance) for distance in distance_between_markers]
-        summed_distances_len = len(summed_distances)
+        
+        
+        # irrelevant code?
+        # summed_distances_len = len(summed_distances)
+        # middle_marker = 0
+        # for k in range (1,summed_distances_len):
+        #     if summed_distances[k] < summed_distances[middle_marker]:
+        #         middle_marker = k
 
-        middle_marker = 0
-        for k in range (1,summed_distances_len):
-            if summed_distances[k] < summed_distances[middle_marker]:
-                middle_marker = k
 
-
-        return summed_distances, middle_marker
+        return summed_distances
     
 
     def numerate_markers(self,frame):
         #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers
-        summed_distances, middle_marker = self.distances_between_markers(frame)
+        summed_distances = self.distances_between_markers(frame)
         poses, number_of_markers = self.detect_multiple_markers(frame)
 
         sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
         for i, index in enumerate(sorted_index):
             poses[index].order = i
 
-        return poses, sorted_index
+        return poses
 
         
 
