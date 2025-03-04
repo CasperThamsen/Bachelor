@@ -19,6 +19,6 @@ class MarkerPose:
         self.y = self.y * scale_factor
 
     def __repr__(self):
-        return "MarkerPose(x=%f, y=%f, theta=%f, quality=%f)" % (self.x, self.y, self.theta, self.quality)
+        return "MarkerPose(x=%f, y=%f, theta=%f, quality=%f, order=%f)" % (self.x, self.y, self.theta, self.quality,self.order)
 
 
