@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4h.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -27,13 +27,11 @@ def main():
     #ic(markers) #orientation, quality has been put into function to handle printing values for multiple markers
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
     summed_distances, middle_marker = mt.distances_between_markers(frame=img[:, :, 1])
-
-
+    poses, sorted_index = mt.numerate_markers(frame = img[:, :, 1])
     
     # IC TESTS---------------------------------------------------
 
-    ic(poses, number_of_markers)
-    ic(summed_distances,middle_marker)
+    ic(poses, number_of_markers, summed_distances, middle_marker, sorted_index)
     #location of middle marker
     ic(poses[middle_marker].x, poses[middle_marker].y)
 
