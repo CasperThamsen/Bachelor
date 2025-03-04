@@ -201,7 +201,6 @@ class MarkerTracker:
         while True:
             markers = self.locate_marker(temp_frame)
             marker_intensity = self.frame_sum_squared[int(markers.y), int(markers.x)]
-            ic(marker_intensity)
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
@@ -222,28 +221,28 @@ class MarkerTracker:
 
 
     #laver en liste af lister, hvor hver liste indeholder afstanden mellem alle markører til hinanden
-    # def numerate_markers(self, frame):
-    #     poses, number_of_markers = self.detect_multiple_markers(frame)
-    #     if number_of_markers == 0:
-    #         return KeyError("No markers detected")
+    def numerate_markers(self, frame):
+        poses, number_of_markers = self.detect_multiple_markers(frame)
+        if number_of_markers == 0:
+            return KeyError("No markers detected")
 
-    #     distance_between_markers = [[] for _ in range(number_of_markers)]
+        distance_between_markers = [[] for _ in range(number_of_markers)]
         
-    #     for i in range(number_of_markers):
-    #         for j in range(number_of_markers):
-    #             if i != j:
-    #                 distance_between_markers[i].append(np.sqrt((location[i][0] - location[j][0])**2 + (location[i][1] - location[j][1])**2))
+        for i in range(number_of_markers):
+            for j in range(number_of_markers):
+                if i != j:
+                    distance_between_markers[i].append(np.sqrt((location[i][0] - location[j][0])**2 + (location[i][1] - location[j][1])**2))
 
-    #     summed_distances = [sum(distance) for distance in distance_between_markers]
-    #     summed_distances_len = len(summed_distances)
-
-
-    #     for k in range (1,summed_distances_len):
-    #         if summed_distances[k-1] > summed_distances[k]:
-    #             middle_marker = k
+        summed_distances = [sum(distance) for distance in distance_between_markers]
+        summed_distances_len = len(summed_distances)
 
 
-    #     return distance_between_markers, summed_distances, middle_marker
+        for k in range (1,summed_distances_len):
+            if summed_distances[k-1] > summed_distances[k]:
+                middle_marker = k
+
+
+        return distance_between_markers, summed_distances, middle_marker
     
 
     
