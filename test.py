@@ -18,8 +18,6 @@ def main():
     mt.track_marker_with_missing_black_leg = False
     pose = mt.locate_marker(img[:, :, 1])
 
-    ic(pose)
-    
    
     # cv2.namedWindow("output", cv2.WINDOW_NORMAL)
     # cv2.imshow("output", mt.frame_sum_squared * 0.001)    #5(0.1), 4(0.01)(0.1) 7(0.1)               Hvilken er bedst?, punktet synes skarpere med værdi 2, ikke stor forskel i quality
@@ -28,20 +26,19 @@ def main():
     #Tuple unpacking
     #ic(markers) #orientation, quality has been put into function to handle printing values for multiple markers
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
-    #distance_between_markers, summed_distances, middle_marker = mt.numerate_markers(frame=img[:, :, 1])
+    summed_distances, middle_marker = mt.distances_between_markers(frame=img[:, :, 1])
 
-    r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
+
     
     # IC TESTS---------------------------------------------------
 
     ic(poses, number_of_markers)
-    #ic(distance_between_markers, summed_distances)
+    ic(summed_distances,middle_marker)
     #location of middle marker
-    # ic(location[middle_marker])
-    # ic(middle_marker)
+    ic(poses[middle_marker].x, poses[middle_marker].y)
 
 
-
+    r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
     for pose in poses:
 
         cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)

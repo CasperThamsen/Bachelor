@@ -221,7 +221,7 @@ class MarkerTracker:
 
 
     #laver en liste af lister, hvor hver liste indeholder afstanden mellem alle markører til hinanden
-    def numerate_markers(self, frame):
+    def distances_between_markers(self, frame):
         poses, number_of_markers = self.detect_multiple_markers(frame)
         if number_of_markers == 0:
             return KeyError("No markers detected")
@@ -231,18 +231,18 @@ class MarkerTracker:
         for i in range(number_of_markers):
             for j in range(number_of_markers):
                 if i != j:
-                    distance_between_markers[i].append(np.sqrt((location[i][0] - location[j][0])**2 + (location[i][1] - location[j][1])**2))
+                    distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
 
         summed_distances = [sum(distance) for distance in distance_between_markers]
         summed_distances_len = len(summed_distances)
 
-
+        middle_marker = 0
         for k in range (1,summed_distances_len):
-            if summed_distances[k-1] > summed_distances[k]:
+            if summed_distances[k] < summed_distances[middle_marker]:
                 middle_marker = k
 
 
-        return distance_between_markers, summed_distances, middle_marker
+        return summed_distances, middle_marker
     
 
     
