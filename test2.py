@@ -2,13 +2,17 @@ import cv2
 import numpy as np
 
 # Load image
-img = cv2.imread('/root/workspace/bachelor/nFoldMark/4.JPG', cv2.IMREAD_COLOR)
+img = cv2.imread('/root/workspace/bachelor/nFoldMark/4r.JPG', cv2.IMREAD_COLOR)
 height, width = img.shape[:2]
 
-# Orientation obtained from Fourier transform analysis
-orientation = -22.327133952216943
+# Orientation obtained from Fourier transform analysis (in radians)
+orientation_radians = 0.782229  # Example value in radians
+
+# Convert orientation from radians to degrees
+orientation_degrees = np.degrees(orientation_radians)
+
 # Compute the rotation matrix
-rotation_matrix = cv2.getRotationMatrix2D((width//2, height//2), -orientation, 1.0)
+rotation_matrix = cv2.getRotationMatrix2D((width // 2, height // 2), -orientation_degrees, 1.0)
 
 # Rotate the image to correct the orientation
 corrected_img = cv2.warpAffine(img, rotation_matrix, (width, height))
