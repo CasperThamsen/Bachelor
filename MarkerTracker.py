@@ -252,14 +252,14 @@ class MarkerTracker:
 
         sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
         for i, index in enumerate(sorted_index):
-            poses[index].order = i
+            poses[index].number = i
         return poses
     
     def numerate_markers_orientation(self,frame):
         poses, number_of_markers = self.detect_multiple_markers(frame)
         sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
         for i, index in enumerate(sorted_index):
-            poses[index].order = i
+            poses[index].number = i
         return poses
 
         

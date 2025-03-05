@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4hr2.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/buk2.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -35,16 +35,16 @@ def main():
     r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
     for pose in poses:
 
-        cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
+        # cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
         for k in range (4):
-            cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
-            cv2.putText(img, str(pose.order), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
+            cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
 
     poses = mt.numerate_markers_orientation(frame = img[:, :, 1])
     ic(poses)
     for pose in poses:
         for k in range (4): 
-            cv2.putText(img, str(pose.order), (int(pose.x)-25, int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(img, str(pose.number), (int(pose.x)-25, int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
     cv2.imshow("Green = theta, teal = distance", img)
 
@@ -53,6 +53,8 @@ def main():
         key = cv2.waitKey(0)  
         if key == ord('q'):   
             break
+
+
 
 
 
