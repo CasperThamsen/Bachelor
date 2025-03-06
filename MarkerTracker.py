@@ -256,7 +256,6 @@ class MarkerTracker:
         sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
         for i, index in enumerate(sorted_index):
             poses[index].number = i
-        return poses
 
         
 

@@ -4,13 +4,11 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/buk2.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4hr.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
-    # ic(img)
     img = (img * blur).astype(np.uint8)
-    # ic(img)
     #unitycoin clean bob lesson1
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
                                      kernel_size=30,   #130
@@ -18,43 +16,46 @@ def main():
     mt.track_marker_with_missing_black_leg = False
     pose = mt.locate_marker(img[:, :, 1])
 
-    # cv2.namedWindow("output", cv2.WINDOW_NORMAL)
-    # cv2.imshow("output", mt.frame_sum_squared * 0.001)    #5(0.1), 4(0.01)(0.1) 7(0.1)               Hvilken er bedst?, punktet synes skarpere med værdi 2, ikke stor forskel i quality
-    #ic(mt.frame_sum_squared)
-
-    #Tuple unpacking
-    #ic(markers) #orientation, quality has been put into function to handle printing values for multiple markers
     poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
     summed_distances = mt.distances_between_markers(poses,number_of_markers)
-    test = mt.numerate_markers(poses,number_of_markers,summed_distances)
+    mt.numerate_markers(poses,number_of_markers,summed_distances)
 
     
     # IC TESTS---------------------------------------------------
     ic("distance",poses)
+    #warning if quality of a marker is low.
+    for pose in poses:
+        if(pose.quality < 0.5):
+            ic("Pose quality is low", pose.quality)
     
     #opencv video capture
-    r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
-    pose_dict = {pose.number: pose for pose in poses}
 
-    # opencv video capture
-    r = 100  # Hvor langt væk cirkerne skal være fra midten af markøren
-    for i in range(number_of_markers - 1):
-        current_pose = pose_dict[i]
-        next_pose = pose_dict[i + 1]
-        for pose in poses:
+    #For distance
+    sorted_poses = sorted(poses, key = lambda pose: pose.number)
+    #Draws lines
+    for i in range(len(sorted_poses)-1):
+        current_pose = sorted_poses[i]
+        next_pose = sorted_poses[i+1]
+        cv2.line(img, (int(current_pose.x), int(current_pose.y)), (int(next_pose.x), int(next_pose.y)), (255, 255, 0), 2)
+    #Draws numbers
+    for pose in poses:
+        for k in range (4):
+            # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
+            cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
 
-            # cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
-            for k in range (4):
-                # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
-                cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-                cv2.line(img, (int(current_pose.x), int(current_pose.y)), (int(next_pose.x), int(next_pose.y)), (255, 0, 0), 2)
 
-        
-    poses = mt.numerate_markers_orientation(poses,number_of_markers)
+    #code for orientation 
+    mt.numerate_markers_orientation(poses,number_of_markers)
     ic(poses)
     for pose in poses:
         for k in range (4): 
             cv2.putText(img, str(pose.number), (int(pose.x)-25, int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+    cv2.namedWindow("Green = theta, teal = distance", cv2.WINDOW_NORMAL)
+    # Resize the window to fit your screen
+    screen_width = 1280  # Replace with your screen width
+    screen_height = 800  # Replace with your screen height
+    cv2.resizeWindow("Green = theta, teal = distance", screen_width, screen_height)
 
     cv2.imshow("Green = theta, teal = distance", img)
 
