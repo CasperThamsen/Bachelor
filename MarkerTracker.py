@@ -105,6 +105,8 @@ class MarkerTracker:
         frame_imag_squared = cv2.multiply(self.frame_imag, self.frame_imag, dtype=cv2.CV_32F)
         self.frame_sum_squared = cv2.add(frame_real_squared, frame_imag_squared, dtype=cv2.CV_32F)
 
+
+        #det her
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(self.frame_sum_squared)
         self.last_marker_location = max_loc
         self.determine_marker_orientation(frame)
@@ -221,8 +223,7 @@ class MarkerTracker:
 
     #laver en liste af lister, hvor hver liste indeholder afstanden mellem alle markører til hinanden
     #Returns a list of distances between markers summed.
-    def distances_between_markers(self, frame):
-        poses, number_of_markers = self.detect_multiple_markers(frame)
+    def distances_between_markers(self, poses, number_of_markers):
         if number_of_markers == 0:
             return KeyError("No markers detected")
 
@@ -245,18 +246,13 @@ class MarkerTracker:
         return summed_distances
     
     #Numerates the markers based on the summed distances between them
-    def numerate_markers(self,frame):
-        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers
-        summed_distances = self.distances_between_markers(frame)
-        poses, number_of_markers = self.detect_multiple_markers(frame)
-
+    def numerate_markers(self,poses,number_of_markers,summed_distances):
+        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
         sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
         for i, index in enumerate(sorted_index):
             poses[index].number = i
-        return poses
     
-    def numerate_markers_orientation(self,frame):
-        poses, number_of_markers = self.detect_multiple_markers(frame)
+    def numerate_markers_orientation(self,poses,number_of_markers):
         sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
         for i, index in enumerate(sorted_index):
             poses[index].number = i
