@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4hr.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/buk2.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -34,14 +34,22 @@ def main():
     
     #opencv video capture
     r = 100 #Hvor langt væk cirkerne skal være fra midten af markøren
-    prev_pose = None
-    for pose in poses:
+    pose_dict = {pose.number: pose for pose in poses}
 
-        # cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
-        for k in range (4):
-            # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
-            cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+    # opencv video capture
+    r = 100  # Hvor langt væk cirkerne skal være fra midten af markøren
+    for i in range(number_of_markers - 1):
+        current_pose = pose_dict[i]
+        next_pose = pose_dict[i + 1]
+        for pose in poses:
 
+            # cv2.circle(img, (int(pose.x), int(pose.y)), 25, (0, 0, 255), 1)
+            for k in range (4):
+                # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
+                cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.line(img, (int(current_pose.x), int(current_pose.y)), (int(next_pose.x), int(next_pose.y)), (255, 0, 0), 2)
+
+        
     poses = mt.numerate_markers_orientation(poses,number_of_markers)
     ic(poses)
     for pose in poses:
