@@ -287,8 +287,8 @@ class MarkerTracker:
                 test.append((summed_distances, current_list))  
 
     
-        ic("in func",summed_distances)
-        ic("in func",distance_between_markers)
+        # ic("in func",summed_distances)
+        # ic("in func",distance_between_markers)
         return test
 
         

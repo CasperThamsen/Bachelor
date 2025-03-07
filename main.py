@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4o4hr.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x4o4hr.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -24,8 +24,8 @@ def main():
     
     # IC TESTS---------------------------------------------------
     # ic("distance",poses)
-    ic(distance_between_markers)
-    ic(summed_distances)
+    # ic(distance_between_markers)
+    # ic(summed_distances)
     ic(test)
     
     #warning if quality of a marker is low.
