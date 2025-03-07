@@ -246,8 +246,8 @@ class MarkerTracker:
 
         return summed_distances, distance_between_markers,middle_marker            
 
-    def detect_marker_pair(self,poses,number_of_markers):
-        marker_pairs = []
+
+    def generate_pair_combinations(self,number_of_markers):
         marker_combinations = []
         # Generate all combinations of 4 markers
         for i in range(number_of_markers):
@@ -255,7 +255,10 @@ class MarkerTracker:
                 for k in range(j + 1, number_of_markers):
                     for l in range(k + 1, number_of_markers):
                         marker_combinations.append((i, j, k, l))
+        return marker_combinations
 
+    def detect_marker_pair(self,poses,marker_combinations):
+        marker_pairs = []
         #use distances_between_markers on the combinations to determine summed_distance of the combinations
         for combination_index in marker_combinations:
             current_list = [poses[i] for i in combination_index]
@@ -284,9 +287,10 @@ class MarkerTracker:
     def numerate_markers_orientation(self,marker_pairs):
         for pair in marker_pairs:
             current_list = pair
-            sorted_index = ic(sorted(range(len(current_list)),key=lambda i: current_list[i].theta))
+            sorted_index = sorted(range(len(current_list)),key=lambda i: current_list[i].theta)
             for i, index in enumerate(sorted_index):
                 current_list[index].number = i
+
         return marker_pairs
         
 
