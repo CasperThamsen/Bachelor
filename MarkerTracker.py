@@ -244,25 +244,11 @@ class MarkerTracker:
             if summed_distances[k] < summed_distances[middle_marker]:
                 middle_marker = k
 
-        return summed_distances, distance_between_markers,middle_marker
-    
-    #Numerates the markers based on the summed distances between them
-    def numerate_markers_distance(self,poses,number_of_markers,summed_distances):
-        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
-        sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
-        for i, index in enumerate(sorted_index):
-            poses[index].number = i
-    
-    def numerate_markers_orientation(self,poses,number_of_markers):
-        sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
-        for i, index in enumerate(sorted_index):
-            poses[index].number = i
-            
+        return summed_distances, distance_between_markers,middle_marker            
 
     def detect_marker_pair(self,poses,number_of_markers):
-        test = []
+        marker_pairs = []
         marker_combinations = []
-
         # Generate all combinations of 4 markers
         for i in range(number_of_markers):
             for j in range(i + 1, number_of_markers):
@@ -291,14 +277,25 @@ class MarkerTracker:
                         contains_inner_marker = True
                         break
                 if not contains_inner_marker:
-                    test.append((current_list))
-    
-        # ic("in func",summed_distances)
-        # ic("in func",distance_between_markers)
-        return test
+                    marker_pairs.append((current_list))
+        number_of_pairs = len(marker_pairs)
+        return marker_pairs, number_of_pairs
 
+    def numerate_markers_orientation(self,marker_pairs):
+        for pair in marker_pairs:
+            current_list = pair
+            sorted_index = ic(sorted(range(len(current_list)),key=lambda i: current_list[i].theta))
+            for i, index in enumerate(sorted_index):
+                current_list[index].number = i
+        return marker_pairs
         
 
+    #Numerates the markers based on the summed distances between them
+    def numerate_markers_distance(self,poses,number_of_markers,summed_distances):
+        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
+        sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
+        for i, index in enumerate(sorted_index):
+            poses[index].number = i
     
 
     
