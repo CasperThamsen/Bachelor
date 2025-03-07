@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/5o4hr.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4o4hr.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -17,12 +17,17 @@ def main():
     pose = mt.locate_marker(img[:, :, 1])
 
     poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
-    summed_distances = mt.distances_between_markers(poses,number_of_markers)
-    mt.numerate_markers(poses,number_of_markers,summed_distances)
+    summed_distances,distance_between_markers, middle_marker = mt.distances_between_markers(poses,number_of_markers)
+    mt.numerate_markers_distance(poses,number_of_markers,summed_distances)
+    test = mt.detect_marker_pair(poses,number_of_markers)
 
     
     # IC TESTS---------------------------------------------------
-    ic("distance",poses)
+    # ic("distance",poses)
+    ic(distance_between_markers)
+    ic(summed_distances)
+    ic(test)
+    
     #warning if quality of a marker is low.
     for pose in poses:
         if(pose.quality < 0.5):
@@ -46,17 +51,15 @@ def main():
 
     #code for orientation 
     mt.numerate_markers_orientation(poses,number_of_markers)
-    ic(poses)
+    # ic(poses)
     for pose in poses:
         for k in range (4): 
             cv2.putText(img, str(pose.number), (int(pose.x)-25, int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
     cv2.namedWindow("Green = theta, teal = distance", cv2.WINDOW_NORMAL)
-    # Resize the window to fit your screen
-    screen_width = 1280  # Replace with your screen width
-    screen_height = 800  # Replace with your screen height
+    screen_width = 1280
+    screen_height = 800
     cv2.resizeWindow("Green = theta, teal = distance", screen_width, screen_height)
-
     cv2.imshow("Green = theta, teal = distance", img)
 
 

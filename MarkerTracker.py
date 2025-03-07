@@ -212,6 +212,7 @@ class MarkerTracker:
             poses.append(marker)
             # Mask the detected marker in the temporary frame
             cv2.circle(temp_frame, (int(marker.x), int(marker.y)), self.kernel_size, (255, 255, 255), -1)
+            cv2.imwrite('/root/workspace/bachelor/nFoldMark/processed_image_white.JPG', temp_frame)
         number_of_markers = len(poses)
     
         return poses, number_of_markers
@@ -237,16 +238,16 @@ class MarkerTracker:
         summed_distances = [sum(distance) for distance in distance_between_markers]
 
         # irrelevant code?
-        # summed_distances_len = len(summed_distances)
-        # middle_marker = 0
-        # for k in range (1,summed_distances_len):
-        #     if summed_distances[k] < summed_distances[middle_marker]:
-        #         middle_marker = k
+        summed_distances_len = len(summed_distances)
+        middle_marker = 0
+        for k in range (1,summed_distances_len):
+            if summed_distances[k] < summed_distances[middle_marker]:
+                middle_marker = k
 
-        return summed_distances
+        return summed_distances, distance_between_markers,middle_marker
     
     #Numerates the markers based on the summed distances between them
-    def numerate_markers(self,poses,number_of_markers,summed_distances):
+    def numerate_markers_distance(self,poses,number_of_markers,summed_distances):
         #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
         sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
         for i, index in enumerate(sorted_index):
@@ -256,6 +257,39 @@ class MarkerTracker:
         sorted_index = sorted(range(number_of_markers), key=lambda i: poses[i].theta)
         for i, index in enumerate(sorted_index):
             poses[index].number = i
+            
+
+    def detect_marker_pair(self,poses,number_of_markers):
+        test = []
+        marker_combinations = []
+
+        # Generate all combinations of 4 markers
+        for i in range(number_of_markers):
+            for j in range(i + 1, number_of_markers):
+                for k in range(j + 1, number_of_markers):
+                    for l in range(k + 1, number_of_markers):
+                        marker_combinations.append((i, j, k, l))
+
+        #use distances_between_markers on the combinations to determine summed_distance of the combinations
+        for combination_index in marker_combinations:
+            current_list = [poses[i] for i in combination_index]
+            distance_between_markers = [[] for _ in range(4)]
+            for i in range(4):
+                for j in range(4):
+                    if i != j:
+                        distance_between_markers[i].append(np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2))
+            
+            summed_distances = [sum(distance) for distance in distance_between_markers]
+            if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):
+                # if current_list[i] or current_list[j] not in test:
+                # numbers = [pose.number for pose in current_list]  
+                # if 15 in numbers and 4 in numbers and 8 in numbers and 2 in numbers:
+                test.append((summed_distances, current_list))  
+
+    
+        ic("in func",summed_distances)
+        ic("in func",distance_between_markers)
+        return test
 
         
 
