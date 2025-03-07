@@ -280,12 +280,18 @@ class MarkerTracker:
                         distance_between_markers[i].append(np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2))
             
             summed_distances = [sum(distance) for distance in distance_between_markers]
-            if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):
-                # if current_list[i] or current_list[j] not in test:
-                # numbers = [pose.number for pose in current_list]  
-                # if 15 in numbers and 4 in numbers and 8 in numbers and 2 in numbers:
-                test.append((summed_distances, current_list))  
-
+            if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):  
+                min_x = min(pose.x for pose in current_list)
+                max_x = max(pose.x for pose in current_list)
+                min_y = min(pose.y for pose in current_list)
+                max_y = max(pose.y for pose in current_list)
+                contains_inner_marker = False
+                for pose in poses:
+                    if pose not in current_list and min_x < pose.x < max_x and min_y < pose.y < max_y:
+                        contains_inner_marker = True
+                        break
+                if not contains_inner_marker:
+                    test.append((current_list))
     
         # ic("in func",summed_distances)
         # ic("in func",distance_between_markers)
