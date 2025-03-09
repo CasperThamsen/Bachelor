@@ -9,6 +9,7 @@ import numpy as np
 import math
 from MarkerPose import MarkerPose
 from icecream import ic
+import time
 
 
 class MarkerTracker:
@@ -196,6 +197,7 @@ class MarkerTracker:
 
     #Returns a list of the poses of every detected marker.
     def detect_multiple_markers(self, frame):
+        start_time = time.time()
         poses = []
         temp_frame = frame.copy()
         reference_intensity = None
@@ -214,6 +216,8 @@ class MarkerTracker:
             cv2.circle(temp_frame, (int(marker.x), int(marker.y)), self.kernel_size, (255, 255, 255), -1)
             cv2.imwrite('/root/workspace/bachelor/nFoldMark/processed_image_white.JPG', temp_frame)
         number_of_markers = len(poses)
+        end_time = time.time()
+        print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
     
         return poses, number_of_markers
     
@@ -248,6 +252,7 @@ class MarkerTracker:
         #Er også skrevet nede i detect_marker_pair, derfor skal én metode laves..        
 
     def generate_pair_combinations(self,number_of_markers):
+        start_time = time.time()
         marker_combinations = []
         # Generate all combinations of 4 markers
         for i in range(number_of_markers):
@@ -255,12 +260,15 @@ class MarkerTracker:
                 for k in range(j + 1, number_of_markers):
                     for l in range(k + 1, number_of_markers):
                         marker_combinations.append((i, j, k, l))
+        end_time = time.time()
+        print(f"Time elapsed generate_pair_combinations: {end_time - start_time}")
         return marker_combinations
         #meget tung funktion
         #O(n^4)
 
 
     def detect_marker_pair(self,poses,marker_combinations):
+        start_time = time.time()
         marker_pairs = []
         for combination_index in marker_combinations:
             current_list = [poses[i] for i in combination_index]
@@ -270,6 +278,7 @@ class MarkerTracker:
                     if i != j:
                         distance_between_markers[i].append(np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2))
             summed_distances = [sum(distance) for distance in distance_between_markers]
+            #make distance into function for itself
             if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):  
                 min_x = min(pose.x for pose in current_list)
                 max_x = max(pose.x for pose in current_list)
@@ -285,16 +294,21 @@ class MarkerTracker:
                 if inner_markers == 1:
                     marker_pairs.append((current_list))
         number_of_pairs = len(marker_pairs)
+        end_time = time.time()
+        print(f"Time elapsed detect_marker_pair: {end_time - start_time}")
         return marker_pairs, number_of_pairs
         #O(m*n), m = number of combinations, n = number of markers
         
 
     def numerate_markers_orientation(self,marker_pairs):
+        start_time = time.time()
         for marker in marker_pairs:
             current_list = marker
             sorted_index = sorted(range(len(current_list)),key=lambda i: current_list[i].theta)
             for i, index in enumerate(sorted_index):
                 current_list[index].number = i
+        end_time = time.time()
+        print(f"Time elapsed numerate_marker_orientation: {end_time - start_time}")
         return marker_pairs
         
 

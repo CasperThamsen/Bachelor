@@ -2,14 +2,16 @@ import cv2
 import MarkerTracker
 import numpy as np
 from icecream import ic
+import time
 
 def main():
+    time_start = time.time()
     img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4hrR2.JPG')
     blur = np.random.normal(0.5,0.1,img.shape)
     img = (img * blur).astype(np.uint8)
     #unitycoin clean bob lesson1
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
-                                     kernel_size=30,   #130
+                                     kernel_size=40,
                                      scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
 
@@ -24,7 +26,7 @@ def main():
     # IC TESTS---------------------------------------------------
     # ic("distance",poses)
     # ic(distance_between_markers)
-    ic(marker_pairs)
+    #ic(marker_pairs)
     
     #warning if quality of a marker is low.
     for pose in poses:
@@ -49,6 +51,8 @@ def main():
     screen_width = 1280
     screen_height = 800
     cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
+    time_end = time.time()
+    ic("Time used: main", time_end-time_start)
     cv2.imshow("sorted_pairs_test", img_pairs_copy)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
