@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4h.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4rR.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -46,7 +46,7 @@ def main():
             start_pose = sorted_pair[i]
             end_pose = sorted_pair[(i + 1) % len(sorted_pair)]  # Wrap around to the first marker
             cv2.line(img_pairs_copy, (int(start_pose.x), int(start_pose.y)), (int(end_pose.x), int(end_pose.y)), (0, 255, 0), 2)
-            cv2.putText(img_pairs_copy, str(start_pose.number), (int(start_pose.x), int(start_pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(img_pairs_copy, str(start_pose.number), (int(start_pose.x), int(start_pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 0), 2)
 
     cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
     screen_width = 1280

@@ -227,7 +227,6 @@ class MarkerTracker:
     def distances_between_markers(self, poses, number_of_markers):
         if number_of_markers == 0:
             return KeyError("No markers detected")
-
         distance_between_markers = [[] for _ in range(number_of_markers)]
         
         for i in range(number_of_markers):
@@ -244,10 +243,7 @@ class MarkerTracker:
             if summed_distances[k] < summed_distances[middle_marker]:
                 middle_marker = k
 
-        return summed_distances, distance_between_markers,middle_marker    
-
-    distances_between_markers        
-
+        return summed_distances, distance_between_markers,middle_marker         
 
     def generate_pair_combinations(self,number_of_markers):
         marker_combinations = []
@@ -265,7 +261,6 @@ class MarkerTracker:
         for combination_index in marker_combinations:
             current_list = [poses[i] for i in combination_index]
             distance_between_markers = [[] for _ in range(4)]
-            ic(distance_between_markers)
             for i in range(4):
                 for j in range(4):
                     if i != j:
@@ -278,7 +273,7 @@ class MarkerTracker:
                 max_y = max(pose.y for pose in current_list)
                 inner_markers = 0
                 for pose in poses:
-                    if pose not in current_list and min_x < pose.x < max_x and min_y < pose.y < max_y:
+                    if pose not in current_list and min_x <= pose.x <= max_x and min_y <= pose.y <= max_y:
                         inner_markers += 1
                 if inner_markers == 1:
                     marker_pairs.append((current_list))
