@@ -4,7 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x4o4hr.JPG')
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4h.JPG')
     # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
     # cv2.imshow("input", img[:, :, 1])
     blur = np.random.normal(0.5,0.1,img.shape)
@@ -14,19 +14,19 @@ def main():
                                      kernel_size=30,   #130
                                      scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
-    pose = mt.locate_marker(img[:, :, 1])
 
+    #pose = mt.locate_marker(img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
-    summed_distances,distance_between_markers, middle_marker = mt.distances_between_markers(poses,number_of_markers)
-    mt.numerate_markers_distance(poses,number_of_markers,summed_distances)
-    test = mt.detect_marker_pair(poses,number_of_markers)
+    # mt.numerate_markers_distance(poses,number_of_markers,all_info)
+    marker_combinations = mt.generate_pair_combinations(number_of_markers)
+    marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations)
+
 
     
     # IC TESTS---------------------------------------------------
     # ic("distance",poses)
     # ic(distance_between_markers)
-    # ic(summed_distances)
-    ic(test)
+    # ic(marker_pairs)
     
     #warning if quality of a marker is low.
     for pose in poses:
@@ -35,32 +35,28 @@ def main():
     
     #opencv video capture
 
-    #For distance
-    sorted_poses = sorted(poses, key = lambda pose: pose.number)
-    #Draws lines
-    for i in range(len(sorted_poses)-1):
-        current_pose = sorted_poses[i]
-        next_pose = sorted_poses[i+1]
-        cv2.line(img, (int(current_pose.x), int(current_pose.y)), (int(next_pose.x), int(next_pose.y)), (255, 255, 0), 2)
-    #Draws numbers
-    for pose in poses:
-        for k in range (4):
-            # cv2.circle(img, (int(pose.x + r * np.cos(pose.theta+k*np.pi/2)), int(pose.y + r * np.sin(pose.theta+k*np.pi/2))), 25, (0, 0, 255), 1)
-            cv2.putText(img, str(pose.number), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+    ic(marker_pairs)
+    #------------------------------------------------------------
+    #This section tests the detect_marker_pair function
+    img_pairs_copy=img.copy()
+    mt.numerate_markers_orientation(marker_pairs)
+    for pair in marker_pairs:
+        sorted_pair = sorted(pair, key=lambda pose: pose.number)  # Sort markers by their number
+        for i in range(len(sorted_pair)):
+            start_pose = sorted_pair[i]
+            end_pose = sorted_pair[(i + 1) % len(sorted_pair)]  # Wrap around to the first marker
+            cv2.line(img_pairs_copy, (int(start_pose.x), int(start_pose.y)), (int(end_pose.x), int(end_pose.y)), (0, 255, 0), 2)
+            cv2.putText(img_pairs_copy, str(start_pose.number), (int(start_pose.x), int(start_pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
-
-    #code for orientation 
-    mt.numerate_markers_orientation(poses,number_of_markers)
-    # ic(poses)
-    for pose in poses:
-        for k in range (4): 
-            cv2.putText(img, str(pose.number), (int(pose.x)-25, int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-
-    cv2.namedWindow("Green = theta, teal = distance", cv2.WINDOW_NORMAL)
+    cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
     screen_width = 1280
     screen_height = 800
-    cv2.resizeWindow("Green = theta, teal = distance", screen_width, screen_height)
-    cv2.imshow("Green = theta, teal = distance", img)
+    cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
+    cv2.imshow("sorted_pairs_test", img_pairs_copy)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    #------------------------------------------------------------
+
 
 
     while True:

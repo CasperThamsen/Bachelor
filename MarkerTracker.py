@@ -244,7 +244,9 @@ class MarkerTracker:
             if summed_distances[k] < summed_distances[middle_marker]:
                 middle_marker = k
 
-        return summed_distances, distance_between_markers,middle_marker            
+        return summed_distances, distance_between_markers,middle_marker    
+
+    distances_between_markers        
 
 
     def generate_pair_combinations(self,number_of_markers):
@@ -263,23 +265,22 @@ class MarkerTracker:
         for combination_index in marker_combinations:
             current_list = [poses[i] for i in combination_index]
             distance_between_markers = [[] for _ in range(4)]
+            ic(distance_between_markers)
             for i in range(4):
                 for j in range(4):
                     if i != j:
                         distance_between_markers[i].append(np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2))
-            
             summed_distances = [sum(distance) for distance in distance_between_markers]
             if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):  
                 min_x = min(pose.x for pose in current_list)
                 max_x = max(pose.x for pose in current_list)
                 min_y = min(pose.y for pose in current_list)
                 max_y = max(pose.y for pose in current_list)
-                contains_inner_marker = False
+                inner_markers = 0
                 for pose in poses:
                     if pose not in current_list and min_x < pose.x < max_x and min_y < pose.y < max_y:
-                        contains_inner_marker = True
-                        break
-                if not contains_inner_marker:
+                        inner_markers += 1
+                if inner_markers == 1:
                     marker_pairs.append((current_list))
         number_of_pairs = len(marker_pairs)
         return marker_pairs, number_of_pairs
