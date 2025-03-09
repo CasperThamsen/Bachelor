@@ -243,7 +243,9 @@ class MarkerTracker:
             if summed_distances[k] < summed_distances[middle_marker]:
                 middle_marker = k
 
-        return summed_distances, distance_between_markers,middle_marker         
+        return summed_distances, distance_between_markers,middle_marker 
+        #O(n^2), n = number of markers
+        #Er også skrevet nede i detect_marker_pair, derfor skal én metode laves..        
 
     def generate_pair_combinations(self,number_of_markers):
         marker_combinations = []
@@ -254,10 +256,12 @@ class MarkerTracker:
                     for l in range(k + 1, number_of_markers):
                         marker_combinations.append((i, j, k, l))
         return marker_combinations
+        #meget tung funktion
+        #O(n^4)
+
 
     def detect_marker_pair(self,poses,marker_combinations):
         marker_pairs = []
-        #use distances_between_markers on the combinations to determine summed_distance of the combinations
         for combination_index in marker_combinations:
             current_list = [poses[i] for i in combination_index]
             distance_between_markers = [[] for _ in range(4)]
@@ -272,30 +276,34 @@ class MarkerTracker:
                 min_y = min(pose.y for pose in current_list)
                 max_y = max(pose.y for pose in current_list)
                 inner_markers = 0
+                #kan måske optimeres? for pose in poses...
+                #+/- 5 ugly fix for markers on almost same line
                 for pose in poses:
-                    if pose not in current_list and min_x <= pose.x <= max_x and min_y <= pose.y <= max_y:
+                    if pose not in current_list and min_x-0.5 <= pose.x <= max_x+0.5 and min_y-0.5 <= pose.y <= max_y+0.5:
                         inner_markers += 1
+                        current_list.append(pose)
                 if inner_markers == 1:
                     marker_pairs.append((current_list))
         number_of_pairs = len(marker_pairs)
         return marker_pairs, number_of_pairs
+        #O(m*n), m = number of combinations, n = number of markers
+        
 
     def numerate_markers_orientation(self,marker_pairs):
-        for pair in marker_pairs:
-            current_list = pair
+        for marker in marker_pairs:
+            current_list = marker
             sorted_index = sorted(range(len(current_list)),key=lambda i: current_list[i].theta)
             for i, index in enumerate(sorted_index):
                 current_list[index].number = i
-
         return marker_pairs
         
 
     #Numerates the markers based on the summed distances between them
-    def numerate_markers_distance(self,poses,number_of_markers,summed_distances):
-        #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
-        sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
-        for i, index in enumerate(sorted_index):
-            poses[index].number = i
+    # def numerate_markers_distance(self,poses,number_of_markers,summed_distances):
+    #     #two methods will be tested, a method of numerating based on summed distances, and a method based on the orientation of the markers 
+    #     sorted_index = sorted(range(number_of_markers), key=lambda i: summed_distances[i])
+    #     for i, index in enumerate(sorted_index):
+    #         poses[index].number = i
     
 
     

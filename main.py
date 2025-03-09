@@ -4,9 +4,7 @@ import numpy as np
 from icecream import ic
 
 def main():
-    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4rR.JPG')
-    # cv2.namedWindow("input", cv2.WINDOW_NORMAL)
-    # cv2.imshow("input", img[:, :, 1])
+    img = cv2.imread('/root/workspace/bachelor/nFoldMark/4x5o4hrR2.JPG')
     blur = np.random.normal(0.5,0.1,img.shape)
     img = (img * blur).astype(np.uint8)
     #unitycoin clean bob lesson1
@@ -17,16 +15,16 @@ def main():
 
     #pose = mt.locate_marker(img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
-    # mt.numerate_markers_distance(poses,number_of_markers,all_info)
     marker_combinations = mt.generate_pair_combinations(number_of_markers)
     marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations)
+    mt.numerate_markers_orientation(marker_pairs)
 
 
     
     # IC TESTS---------------------------------------------------
     # ic("distance",poses)
     # ic(distance_between_markers)
-    # ic(marker_pairs)
+    ic(marker_pairs)
     
     #warning if quality of a marker is low.
     for pose in poses:
@@ -35,11 +33,10 @@ def main():
     
     #opencv video capture
 
-    ic(marker_pairs)
+
     #------------------------------------------------------------
     #This section tests the detect_marker_pair function
     img_pairs_copy=img.copy()
-    mt.numerate_markers_orientation(marker_pairs)
     for pair in marker_pairs:
         sorted_pair = sorted(pair, key=lambda pose: pose.number)  # Sort markers by their number
         for i in range(len(sorted_pair)):
