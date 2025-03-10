@@ -279,7 +279,7 @@ class MarkerTracker:
                         distance_between_markers[i].append(np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2))
             summed_distances = [sum(distance) for distance in distance_between_markers]
             #make distance into function for itself
-            if all(abs(summed_distances[i] - summed_distances[0]) <= 10 for i in range(3)):  
+            if all(abs(summed_distances[i] - summed_distances[0]) <= 15 for i in range(4)):  
                 min_x = min(pose.x for pose in current_list)
                 max_x = max(pose.x for pose in current_list)
                 min_y = min(pose.y for pose in current_list)
