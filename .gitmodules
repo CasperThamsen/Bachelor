@@ -1,0 +1,3 @@
+[submodule "nFoldMarkers"]
+	path = nFoldMarkers
+	url = https://github.com/CasperThamsen/nFoldMarkers.git
