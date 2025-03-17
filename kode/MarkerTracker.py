@@ -94,7 +94,7 @@ class MarkerTracker:
             # In that case the refine method bails out and returns two zeros.
             return 0, 0
 
-    def locate_marker(self, frame):
+    def locate_marker_init(self, frame):
         assert len(frame.shape) == 2, "Input image is not a single channel image."
         self.frame_real = frame.copy()
         self.frame_imag = frame.copy()
@@ -106,7 +106,7 @@ class MarkerTracker:
         frame_imag_squared = cv2.multiply(self.frame_imag, self.frame_imag, dtype=cv2.CV_32F)
         self.frame_sum_squared = cv2.add(frame_real_squared, frame_imag_squared, dtype=cv2.CV_32F)
 
-
+    def locate_marker(self, frame):
         #det her
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(self.frame_sum_squared)
         self.last_marker_location = max_loc
@@ -117,6 +117,7 @@ class MarkerTracker:
         max_loc = (max_loc[0] + dx, max_loc[1] + dy)
 
         self.pose = MarkerPose(max_loc[0], max_loc[1], self.orientation, self.quality, self.order)
+        ic(self.pose)
         return self.pose
 
     def determine_marker_orientation(self, frame):
@@ -199,23 +200,22 @@ class MarkerTracker:
     def detect_multiple_markers(self, frame):
         start_time = time.time()
         poses = []
-        temp_frame = frame.copy()
         reference_intensity = None
 
         while True:
-            marker = self.locate_marker(temp_frame)
+            marker = self.locate_marker(frame)
             marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            if marker_intensity / reference_intensity <= 0.25:
+            if marker_intensity / reference_intensity <= 0.5:
                 break
-
             poses.append(marker)
             # Mask the detected marker in the temporary frame
-            radius = int(self.kernel_size / 2)
-            cv2.circle(temp_frame, (int(marker.x), int(marker.y)), radius, (255, 255, 255), -1)
-            cv2.imwrite('/root/workspace/bachelor/nFoldMark/processed_image_white.JPG', temp_frame)
+            radius = int(self.kernel_size / 4)
+            for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
+                for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
+                    self.frame_sum_squared[y, x] = 0
         number_of_markers = len(poses)
         end_time = time.time()
         print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
@@ -311,9 +311,7 @@ class MarkerTracker:
     #             current_list[index].number = i
     #     end_time = time.time()
     #     print(f"Time elapsed numerate_marker_orientation: {end_time - start_time}")
-    #     return marker_pairs
-        
-
+    #     return marker_pairs     
     # Numerates the markers based on the summed distances between them
     def numerate_markers_distance(self, marker_pairs):
         start_time = time.time()
