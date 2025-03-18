@@ -6,8 +6,15 @@ import time
 
 def main():
     cap = cv2.VideoCapture('/root/workspace/bachelor/nFoldMarkers/irl/vid.mp4')
-    time_start = time.time()
+    frame_width = int(cap.get(3))
+    frame_height = int(cap.get(4))
+    frame_size = (frame_width, frame_height)
+    out = cv2.VideoWriter('summethodtested.mp4', 
+                        cv2.VideoWriter_fourcc(*'XVID'), 
+                        20.0, 
+                        frame_size)
     while cap.isOpened():
+        time_start = time.time()
         # img = cv2.imread('/root/workspace/bachelor/nFoldMarkers/irl/medium.JPG')
         ret, img = cap.read()
         if not ret:
@@ -31,8 +38,8 @@ def main():
         # IC TESTS---------------------------------------------------
         # ic("distance",poses)
         # ic(distance_between_markers)
-        ic(marker_pairs)
-        ic(number_of_pairs)
+        # ic(marker_pairs)
+        # ic(number_of_pairs)
 
         #warning if quality of a marker is low.
         for pose in poses:
@@ -48,12 +55,13 @@ def main():
         for pair in marker_pairs:
             sorted_pair = sorted(pair, key=lambda pose: pose.number)  # Sort markers by their number
             for i in range(len(sorted_pair)-1):
-                cv2.line(img_pairs_copy, (int(sorted_pair[i].x), int(sorted_pair[i].y)), (int(sorted_pair[(i+1)].x), int(sorted_pair[(i+1)].y)), (0, 255, 0), 2)
+                cv2.line(img_pairs_copy, (int(sorted_pair[i].x), int(sorted_pair[i].y)), (int(sorted_pair[(i+1)].x), int(sorted_pair[(i+1)].y)), (0, 255, 0), 4)
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
 
+        out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
-        screen_width = 960
-        screen_height = 640
+        screen_width = 1280
+        screen_height = 720
         cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
         time_end = time.time()
         ic("Time used: main", time_end-time_start)
@@ -61,6 +69,7 @@ def main():
         if cv2.waitKey(1) == ord('q'):
             break
     cap.release()
+    out.release()
     cv2.destroyAllWindows()
     #------------------------------------------------------------
 

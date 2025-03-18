@@ -117,7 +117,6 @@ class MarkerTracker:
         max_loc = (max_loc[0] + dx, max_loc[1] + dy)
 
         self.pose = MarkerPose(max_loc[0], max_loc[1], self.orientation, self.quality, self.order)
-        ic(self.pose)
         return self.pose
 
     def determine_marker_orientation(self, frame):
