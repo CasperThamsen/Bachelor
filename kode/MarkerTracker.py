@@ -210,7 +210,6 @@ class MarkerTracker:
             if marker_intensity / reference_intensity <= 0.5:
                 break
             poses.append(marker)
-            # Mask the detected marker in the temporary frame
             radius = int(self.kernel_size / 4)
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
                 for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
@@ -220,36 +219,32 @@ class MarkerTracker:
         print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
     
         return poses, number_of_markers
-    
-        #Er der potentielle problemer i min løsning ifht.
-        #  at markører bliver overskrevet med en sort cirkel af kernel size?
-        #Vigtigt at have de rigtige værdier i MarkerTracker.
 
 
-    #laver en liste af lister, hvor hver liste indeholder afstanden mellem alle markører til hinanden
-    #Returns a list of distances between markers summed.
+
+    # Returns a list of distances between markers summed.
     # def distances_between_markers(self, poses, number_of_markers):
-    #     if number_of_markers == 0:
-    #         return KeyError("No markers detected")
-    #     distance_between_markers = [[] for _ in range(number_of_markers)]
+        if number_of_markers == 0:
+            return KeyError("No markers detected")
+        distance_between_markers = [[] for _ in range(number_of_markers)]
         
-    #     for i in range(number_of_markers):
-    #         for j in range(number_of_markers):
-    #             if i != j:
-    #                 distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
+        for i in range(number_of_markers):
+            for j in range(number_of_markers):
+                if i != j:
+                    distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
 
-    #     summed_distances = [sum(distance) for distance in distance_between_markers]
+        summed_distances = [sum(distance) for distance in distance_between_markers]
 
-    #     # irrelevant code?
-    #     summed_distances_len = len(summed_distances)
-    #     middle_marker = 0
-    #     for k in range (1,summed_distances_len):
-    #         if summed_distances[k] < summed_distances[middle_marker]:
-    #             middle_marker = k
+        # irrelevant code?
+        summed_distances_len = len(summed_distances)
+        middle_marker = 0
+        for k in range (1,summed_distances_len):
+            if summed_distances[k] < summed_distances[middle_marker]:
+                middle_marker = k
 
-    #     return summed_distances, distance_between_markers,middle_marker 
-    #     #O(n^2), n = number of markers
-    #     #Er også skrevet nede i detect_marker_pair, derfor skal én metode laves..        
+        return summed_distances, distance_between_markers,middle_marker 
+        #O(n^2), n = number of markers
+        #Er også skrevet nede i detect_marker_pair, derfor skal én metode laves..        
 
     def generate_pair_combinations(self,number_of_markers):
         start_time = time.time()
@@ -268,7 +263,8 @@ class MarkerTracker:
 
     #funktion der finder alle afstande, kan så smides på listen ifht kombinationer? problem løst.
 
-    def detect_marker_pair(self,poses,marker_combinations):
+    #Detects marker pairs that are in a formation resulting in equal distance sum between cornors of marker pair.
+    # def detect_marker_pair(self,poses,marker_combinations):
         start_time = time.time()
         marker_pairs = []
         for combination_index in marker_combinations:
@@ -299,19 +295,51 @@ class MarkerTracker:
         print(f"Time elapsed detect_marker_pair: {end_time - start_time}")
         return marker_pairs, number_of_pairs
         #O(m*n), m = number of combinations, n = number of markers
-        
+
+    #Detecs marker pairs based on the knowledge, that a marker pair consists of 5 somewhat close markers.
+    #add the 4 closest markers to the list.
+    def detect_marker_pairs(self,poses,number_of_markers):
+        marker_pairs = []
+        distance_between_markers = [[] for _ in range(number_of_markers)]
+        for i in range(number_of_markers):
+            for j in range(number_of_markers):
+                if i != j:
+                    distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
+                    #[pose[0](distance to all other poses and so on...)]
+        # ic(distance_between_markers)
+        for pose in poses:
+            if not any(pose in pair for pair in marker_pairs):
+                current_list = []
+                current_list.append(pose)
+                for _ in range(4):
+                    current_pose_index = poses.index(pose)
+                    closest_marker = min(distance_between_markers[current_pose_index])
+                    # ic(distance_between_markers[current_pose_index])
+                    # ic(closest_marker)
+                    closest_marker_index = distance_between_markers[current_pose_index].index(closest_marker)
+                    # ic(closest_marker_index)
+                    current_list.append(poses[closest_marker_index])
+                    distance_between_markers[current_pose_index][closest_marker_index] = np.inf
+                # ic(current_list)
+                marker_pairs.append(current_list)
+        number_of_pairs = len(marker_pairs)
+        # ic(marker_pairs)
+        # ic(number_of_pairs)
+        return marker_pairs
 
     # def numerate_markers_orientation(self,marker_pairs):
-    #     start_time = time.time()
-    #     for marker in marker_pairs:
-    #         current_list = marker
-    #         sorted_index = sorted(range(len(current_list)),key=lambda i: current_list[i].theta)
-    #         for i, index in enumerate(sorted_index):
-    #             current_list[index].number = i
-    #     end_time = time.time()
-    #     print(f"Time elapsed numerate_marker_orientation: {end_time - start_time}")
-    #     return marker_pairs     
-    # Numerates the markers based on the summed distances between them
+        start_time = time.time()
+        for marker in marker_pairs:
+            current_list = marker
+            sorted_index = sorted(range(len(current_list)),key=lambda i: current_list[i].theta)
+            for i, index in enumerate(sorted_index):
+                current_list[index].number = i
+        end_time = time.time()
+        print(f"Time elapsed numerate_marker_orientation: {end_time - start_time}")
+        return marker_pairs     
+    
+  
+
     def numerate_markers_distance(self, marker_pairs):
         start_time = time.time()
         for marker_pair in marker_pairs:

@@ -31,7 +31,8 @@ def main():
         mt.locate_marker_init(img[:,:,1])
         poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
         marker_combinations = mt.generate_pair_combinations(number_of_markers)
-        marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations)
+        marker_pairs = mt.detect_marker_pairs(poses,number_of_markers)
+        # marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations) #sum method
         mt.numerate_markers_distance(marker_pairs)
 
     
@@ -56,6 +57,7 @@ def main():
             sorted_pair = sorted(pair, key=lambda pose: pose.number)  # Sort markers by their number
             for i in range(len(sorted_pair)-1):
                 cv2.line(img_pairs_copy, (int(sorted_pair[i].x), int(sorted_pair[i].y)), (int(sorted_pair[(i+1)].x), int(sorted_pair[(i+1)].y)), (0, 255, 0), 4)
+            for i in range(len(sorted_pair)):
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
 
         out.write(img_pairs_copy)
@@ -66,7 +68,7 @@ def main():
         time_end = time.time()
         ic("Time used: main", time_end-time_start)
         cv2.imshow("sorted_pairs_test", img_pairs_copy)
-        if cv2.waitKey(1) == ord('q'):
+        if cv2.waitKey(0) == ord('q'):
             break
     cap.release()
     out.release()
