@@ -59,13 +59,9 @@ def main():
                 cv2.line(img_pairs_copy, (int(sorted_pair[i].x), int(sorted_pair[i].y)), (int(sorted_pair[(i+1)].x), int(sorted_pair[(i+1)].y)), (0, 255, 0), 4)
             for i in range(len(sorted_pair)):
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-        numbers = list(range(100))
-        i = 0
         for pose in poses:
             cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
-            #place iterated numbers to see which marker is which in the list
-            cv2.putText(img_pairs_copy, str(numbers[i]), (int(pose.x)+5, int(pose.y)+5), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            i += 1
+
 
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
@@ -75,10 +71,10 @@ def main():
         time_end = time.time()
         ic("Time used: main", time_end-time_start)
         cv2.imshow("sorted_pairs_test", img_pairs_copy)
-        # if number_of_markers < 20:
-        #     if cv2.waitKey(0) == ord('q'):
-        #         break
-        if number_of_markers <= 20:
+        if number_of_markers < 20:
+            if cv2.waitKey(0) == ord('q'):
+                break
+        if number_of_markers == 20:
             if cv2.waitKey(1) == ord('q'):
                 break
 

@@ -194,7 +194,6 @@ class MarkerTracker:
 
         return bright_regions, dark_regions      
 
-    #Returns a list of the poses of every detected marker.
     def detect_multiple_markers(self, frame):
         start_time = time.time()
         poses = []
@@ -205,7 +204,8 @@ class MarkerTracker:
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            if marker_intensity / (reference_intensity + 0.17) <= 0.45:
+            noice = 0.0001
+            if marker_intensity / (reference_intensity + noice) <= 0.45:
                 break
             poses.append(marker)
             radius = 10
@@ -233,8 +233,8 @@ class MarkerTracker:
     
     def validate_marker_pair(self, debug):
         expected_ratios = [1,1.56898272, 1.81953898, 2.11693184] 
-        normalized_distances = [distance / debug[0] for i, distance in enumerate(debug)]
-        tolerance = 0.4
+        normalized_distances = [distance / debug[0] for distance in debug]
+        tolerance = 0.5
         if all(abs(nd - error) < tolerance for nd, error in zip(normalized_distances, expected_ratios)):
             return True
         return False
