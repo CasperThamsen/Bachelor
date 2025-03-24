@@ -298,15 +298,18 @@ class MarkerTracker:
 
     #Detecs marker pairs based on the knowledge, that a marker pair consists of 5 somewhat close markers.
     #add the 4 closest markers to the list.
-    def detect_marker_pairs(self,poses,number_of_markers):
-        marker_pairs = []
+
+    def distance_between_markers(self,poses,number_of_markers):
         distance_between_markers = [[] for _ in range(number_of_markers)]
         for i in range(number_of_markers):
             for j in range(number_of_markers):
                 if i != j:
                     distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
-                    #[pose[0](distance to all other poses and so on...)]
-        # ic(distance_between_markers)
+                elif i == j:
+                    distance_between_markers[i].append(np.inf)
+
+    def detect_marker_pairs(self,poses,distance_between_markers):
+        marker_pairs = []
         for pose in poses:
             if not any(pose in pair for pair in marker_pairs):
                 current_list = []
