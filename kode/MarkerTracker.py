@@ -204,7 +204,7 @@ class MarkerTracker:
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            noice = 0.0001
+            noice = 0.05
             if marker_intensity / (reference_intensity + noice) <= 0.45:
                 break
             poses.append(marker)
@@ -218,29 +218,28 @@ class MarkerTracker:
     
         return poses, number_of_markers  
 
-    #Detecs marker pairs based on the knowledge, that a marker pair consists of 5 somewhat close markers.
-    #add the 4 closest markers to the list.
-
-    def distance_between_markers(self,poses,number_of_markers):
-        distance_between_markers = [[] for _ in range(number_of_markers)]
+    def distances_between_markers(self,poses,number_of_markers):
+        distances_between_markers = [[] for _ in range(number_of_markers)]
         for i in range(number_of_markers):
             for j in range(number_of_markers):
                 if i != j:
-                    distance_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
+                    distances_between_markers[i].append(np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2))
                 elif i == j:
-                    distance_between_markers[i].append(np.inf)
-        return distance_between_markers
+                    distances_between_markers[i].append(np.inf)
+        return distances_between_markers
     
     def validate_marker_pair(self, debug):
         expected_ratios = [1,1.56898272, 1.81953898, 2.11693184] 
         normalized_distances = [distance / debug[0] for distance in debug]
-        tolerance = 0.5
+        tolerance = 0.4
         if all(abs(nd - error) < tolerance for nd, error in zip(normalized_distances, expected_ratios)):
             return True
         return False
 
-    def detect_marker_pairs(self,poses,distance_between_markers):
+    def detect_marker_pairs(self,poses,distances_between_markers):
         marker_pairs = []
+        invalid_markers = set()
+        distances_between_markers_copy = distances_between_markers.copy()
         for pose in poses:
             if not any(pose in pair for pair in marker_pairs):
                 current_list = []
@@ -248,12 +247,11 @@ class MarkerTracker:
                 current_list.append(pose)
                 for _ in range(4):
                     current_pose_index = poses.index(pose)
-                    closest_marker = min(distance_between_markers[current_pose_index])
-                    closest_marker_index = distance_between_markers[current_pose_index].index(closest_marker)
+                    closest_marker = min(distances_between_markers_copy[current_pose_index])
                     debug.append(closest_marker)
+                    closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
                     current_list.append(poses[closest_marker_index])
-                    distance_between_markers[current_pose_index][closest_marker_index] = np.inf
-
+                    distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
             if self.validate_marker_pair(debug):
                 marker_pairs.append(current_list)
         number_of_pairs = len(marker_pairs)

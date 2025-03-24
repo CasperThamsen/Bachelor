@@ -30,7 +30,7 @@ def main():
 
         mt.locate_marker_init(img[:,:,1])
         poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
-        distance_between_markers = mt.distance_between_markers(poses,number_of_markers)
+        distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         # marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations) #sum method
         mt.numerate_markers_distance(marker_pairs)
