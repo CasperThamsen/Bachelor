@@ -199,15 +199,12 @@ class MarkerTracker:
         start_time = time.time()
         poses = []
         reference_intensity = None
-        i = 0
         while True:
             marker = self.locate_marker(frame)
             marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            i += 1
-            ic("marker_intensity",marker_intensity, i)
             if marker_intensity / (reference_intensity + 0.17) <= 0.45:
                 break
             poses.append(marker)
@@ -237,7 +234,6 @@ class MarkerTracker:
     def validate_marker_pair(self, debug):
         expected_ratios = [1,1.56898272, 1.81953898, 2.11693184] 
         normalized_distances = [distance / debug[0] for i, distance in enumerate(debug)]
-        ic("normalized_distances",normalized_distances)
         tolerance = 0.4
         if all(abs(nd - error) < tolerance for nd, error in zip(normalized_distances, expected_ratios)):
             return True
@@ -257,8 +253,6 @@ class MarkerTracker:
                     debug.append(closest_marker)
                     current_list.append(poses[closest_marker_index])
                     distance_between_markers[current_pose_index][closest_marker_index] = np.inf
-                ic(distance_between_markers[current_pose_index])
-                ic("debug",debug)
 
             if self.validate_marker_pair(debug):
                 marker_pairs.append(current_list)
