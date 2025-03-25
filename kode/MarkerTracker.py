@@ -196,22 +196,17 @@ class MarkerTracker:
     def detect_multiple_markers(self, frame):
         poses = []
         reference_intensity = None
-        reference_intensity_2 = 0
         while True:
             marker = self.locate_marker(frame)
             marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            noice = 0.05
-            reference_intensity_2 = max(reference_intensity_2, reference_intensity)
-            
-            if marker_intensity / (reference_intensity_2 + noice) <= 0.5:
+            noise = 0.05      
+            if marker_intensity / (reference_intensity + noise) <= 0.5:
                 break
-            ic(marker_intensity)
-            ic(reference_intensity)
             poses.append(marker)
-            radius = 10
+            radius = 5
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
                 for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
                     self.frame_sum_squared[y, x] = 0
