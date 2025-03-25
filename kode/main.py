@@ -5,14 +5,20 @@ from icecream import ic
 import time
 
 def main():
-    cap = cv2.VideoCapture('/root/workspace/bachelor/nFoldMarkers/irl/vid.mp4')
+    cap = cv2.VideoCapture(1)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('summethodtested.mp4', 
+    out = cv2.VideoWriter('livetest.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)
+    mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
+                                kernel_size=30,
+                                scale_factor=100)
+    mt.track_marker_with_missing_black_leg = False
+
+    
     while cap.isOpened():
         time_start = time.time()
         # img = cv2.imread('/root/workspace/bachelor/nFoldMarkers/irl/medium.JPG')
@@ -23,13 +29,10 @@ def main():
         # blur = np.random.normal(0.5,0.1,img.shape)
         # img = (img * blur).astype(np.uint8)
         #unitycoin clean bob lesson1
-        mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
-                                        kernel_size=30,
-                                        scale_factor=100)
-        mt.track_marker_with_missing_black_leg = False
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        mt.locate_marker_init(img[:,:,1])
-        poses, number_of_markers = mt.detect_multiple_markers(frame = img[:,:,1])
+        mt.locate_marker_init(gray_img)
+        poses, number_of_markers = mt.detect_multiple_markers(gray_img)
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         # marker_pairs,number_of_pairs = mt.detect_marker_pair(poses,marker_combinations) #sum method
@@ -65,8 +68,8 @@ def main():
 
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
-        screen_width = 1280
-        screen_height = 720
+        screen_width = int(cap.get(3))
+        screen_height = int(cap.get(4))
         cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
         time_end = time.time()
         ic("Time used: main", time_end-time_start)
