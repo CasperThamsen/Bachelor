@@ -5,7 +5,7 @@ from icecream import ic
 import time
 
 def main():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
