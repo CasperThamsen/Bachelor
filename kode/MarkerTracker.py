@@ -9,7 +9,6 @@ import numpy as np
 import math
 from MarkerPose import MarkerPose
 from icecream import ic
-import time
 
 
 class MarkerTracker:
@@ -195,9 +194,9 @@ class MarkerTracker:
         return bright_regions, dark_regions      
 
     def detect_multiple_markers(self, frame):
-        start_time = time.time()
         poses = []
         reference_intensity = None
+        reference_intensity_2 = 0
         while True:
             marker = self.locate_marker(frame)
             marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
@@ -205,16 +204,18 @@ class MarkerTracker:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
             noice = 0.05
-            if marker_intensity / (reference_intensity + noice) <= 0.45:
+            reference_intensity_2 = max(reference_intensity_2, reference_intensity)
+            
+            if marker_intensity / (reference_intensity_2 + noice) <= 0.5:
                 break
+            ic(marker_intensity)
+            ic(reference_intensity)
             poses.append(marker)
             radius = 10
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
                 for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
                     self.frame_sum_squared[y, x] = 0
         number_of_markers = len(poses)
-        end_time = time.time()
-        print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
     
         return poses, number_of_markers  
 
@@ -259,7 +260,6 @@ class MarkerTracker:
   
 
     def numerate_markers_distance(self, marker_pairs):
-        start_time = time.time()
         for marker_pair in marker_pairs:
             distance_between_markers = [[] for _ in range(len(marker_pair))]
             for i in range(len(marker_pair)):
@@ -271,9 +271,6 @@ class MarkerTracker:
             sorted_index = sorted(range(len(marker_pair)), key=lambda i: summed_distances[i])
             for i, index in enumerate(sorted_index):
                 marker_pair[index].number = i
-
-        end_time = time.time()
-        print(f"Time elapsed numerate_marker_distance: {end_time - start_time}")
     
 
     
