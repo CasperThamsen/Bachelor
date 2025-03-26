@@ -9,6 +9,7 @@ import numpy as np
 import math
 from MarkerPose import MarkerPose
 from icecream import ic
+import time
 
 
 class MarkerTracker:
@@ -194,6 +195,7 @@ class MarkerTracker:
         return bright_regions, dark_regions      
 
     def detect_multiple_markers(self, frame):
+        start_time = time.time()
         poses = []
         reference_intensity = None
         while True:
@@ -202,15 +204,18 @@ class MarkerTracker:
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #if there is no intensity withing marker ref, break
-            noise = 0.05      
+            noise = 0.08
             if marker_intensity / (reference_intensity + noise) <= 0.5:
                 break
+            ic(marker_intensity)
             poses.append(marker)
             radius = 5
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
                 for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
                     self.frame_sum_squared[y, x] = 0
         number_of_markers = len(poses)
+        end_time = time.time()
+        print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
     
         return poses, number_of_markers  
 
@@ -224,33 +229,38 @@ class MarkerTracker:
                     distances_between_markers[i].append(np.inf)
         return distances_between_markers
     
-    def validate_marker_pair(self, debug):
-        expected_ratios = [1,1.56898272, 1.81953898, 2.11693184] 
-        normalized_distances = [distance / debug[0] for distance in debug]
-        tolerance = 0.4
-        if all(abs(nd - error) < tolerance for nd, error in zip(normalized_distances, expected_ratios)):
+    def validate_marker_pair(self, current_list, tolerance):
+        expected_ratios = [1.0, 1.1018450614583595, 1.1026505053012112, 1.1528713478676889, 1.6395868597466485, 1.7357341510652087, 2.5026905030023316, 2.505888531118552, 2.735731158384941, 2.7365309995290383] 
+        distances = []
+        for i in range(len(current_list)):
+            for j in range(i + 1, len(current_list)):
+                distance = np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2)
+                distances.append(distance)
+        base_distance = min(distances)
+        normalized_distances = [distance / base_distance for distance in distances]
+        normalized_distances.sort()
+        ic(normalized_distances)
+        if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, expected_ratios)):
             return True
         return False
 
     def detect_marker_pairs(self,poses,distances_between_markers):
         marker_pairs = []
-        invalid_markers = set()
         distances_between_markers_copy = distances_between_markers.copy()
         for pose in poses:
             if not any(pose in pair for pair in marker_pairs):
                 current_list = []
-                debug = []
+                current_distances = []
                 current_list.append(pose)
                 for _ in range(4):
                     current_pose_index = poses.index(pose)
                     closest_marker = min(distances_between_markers_copy[current_pose_index])
-                    debug.append(closest_marker)
+                    current_distances.append(closest_marker)
                     closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
                     current_list.append(poses[closest_marker_index])
                     distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
-            if self.validate_marker_pair(debug):
+            if self.validate_marker_pair(current_list, tolerance=0.5):
                 marker_pairs.append(current_list)
-        number_of_pairs = len(marker_pairs)
         return marker_pairs
   
 
@@ -266,10 +276,7 @@ class MarkerTracker:
             sorted_index = sorted(range(len(marker_pair)), key=lambda i: summed_distances[i])
             for i, index in enumerate(sorted_index):
                 marker_pair[index].number = i
-    
 
-    
-        
 
 
 
