@@ -230,8 +230,7 @@ class MarkerTracker:
         return distances_between_markers
     
     def validate_marker_pair(self, current_list, tolerance):
-        
-        expected_ratios = [1.000000, 0.402761, 0.634468, 0.914816, 0.915985, 0.365533, 0.403055, 0.599323, 1.000292, 0.421413] 
+        expected_ratios = [1.000000, 1.152871, 1.639587, 1.735734, 1.102651, 2.505889, 2.735731, 2.736531, 2.502691, 1.101845] 
         distances = []
         for i in range(len(current_list)):
             for j in range(i + 1, len(current_list)):
@@ -239,7 +238,6 @@ class MarkerTracker:
                 distances.append(distance)
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
-        normalized_distances.sort()
         if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, expected_ratios)):
             ic(normalized_distances)
             return True
@@ -263,20 +261,6 @@ class MarkerTracker:
             if self.validate_marker_pair(current_list, tolerance=0.5):
                 marker_pairs.append(current_list)
         return marker_pairs
-  
-
-    def numerate_markers_distance(self, marker_pairs):
-        for marker_pair in marker_pairs:
-            distance_between_markers = [[] for _ in range(len(marker_pair))]
-            for i in range(len(marker_pair)):
-                for j in range(len(marker_pair)):
-                    if i != j:
-                        distance_between_markers[i].append(np.sqrt((marker_pair[i].x - marker_pair[j].x)**2 + (marker_pair[i].y - marker_pair[j].y)**2))
-            summed_distances = [sum(distance) for distance in distance_between_markers]
-
-            sorted_index = sorted(range(len(marker_pair)), key=lambda i: summed_distances[i])
-            for i, index in enumerate(sorted_index):
-                marker_pair[index].number = i
 
 
 

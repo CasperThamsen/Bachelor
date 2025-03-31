@@ -14,7 +14,7 @@ def main():
                         20.0, 
                         frame_size)
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
-                                kernel_size=30,
+                                kernel_size=25,
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
     while cap.isOpened():

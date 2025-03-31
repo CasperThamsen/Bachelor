@@ -1,6 +1,7 @@
 import numpy as np
 import MarkerTracker as MarkerTracker
 import cv2
+import icecream as ic
 
 def compute_distance_matrix(marker_positions,number_of_markers):
     """
@@ -11,12 +12,28 @@ def compute_distance_matrix(marker_positions,number_of_markers):
     
     for i in range(number_of_markers):
         for j in range(i + 1, number_of_markers):
-            distance = np.sqrt((marker_positions[i][0] - marker_positions[j][0])**2 + 
-                        (marker_positions[i][1] - marker_positions[j][1])**2)
+            distance = np.sqrt((marker_positions[i].x - marker_positions[j].x)**2 + 
+                        (marker_positions[i].y - marker_positions[j].y)**2)
             distances_matrix[i][j] = distance
             distances_matrix[j][i] = distance
 
     return distances_matrix
+
+def numerate_markers_distance(poses):
+
+    distance_between_markers = [[] for _ in range(len(poses))]
+    for i in range(len(poses)):
+        for j in range(len(poses)):
+            if i != j:
+                distance_between_markers[i].append(
+                    np.sqrt((poses[i].x - poses[j].x)**2 + (poses[i].y - poses[j].y)**2)
+                )
+    summed_distances = [sum(distance) for distance in distance_between_markers]
+    
+    sorted_indices = sorted(range(len(poses)), key=lambda i: summed_distances[i])
+    sorted_poses = [poses[i] for i in sorted_indices]
+    
+    return sorted_poses
 
 def main():
     mt = MarkerTracker.MarkerTracker(order=4,  # number of shaded regions
@@ -27,8 +44,9 @@ def main():
     img = cv2.imread('findrelation.jpg')
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
-    marker_positions = [(pose.x, pose.y) for pose in poses]
-    distance_matrix = compute_distance_matrix(marker_positions,number_of_markers)
+    sorted_poses = numerate_markers_distance(poses)
+    distance_matrix = compute_distance_matrix(sorted_poses,number_of_markers)
+
     
     print("Distance Matrix:")
     print(distance_matrix)
