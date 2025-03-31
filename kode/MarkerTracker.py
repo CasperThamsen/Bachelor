@@ -33,6 +33,7 @@ class MarkerTracker:
 
         #her
         self.validated_pairs = []
+        self.expected_ratios = None
 
         # Create kernel used to remove arm in quality-measure
         (kernel_remove_arm_real, kernel_remove_arm_imag) = self.generate_symmetry_detector_kernel(1, self.kernel_size)
@@ -233,7 +234,6 @@ class MarkerTracker:
         return distances_between_markers
     
     def validate_marker_pair(self, current_list, tolerance):
-        expected_ratios = [1.000000, 1.152871, 1.639587, 1.735734, 1.102651, 2.505889, 2.735731, 2.736531, 2.502691, 1.101845] 
         distances = []
         for i in range(len(current_list)):
             for j in range(i + 1, len(current_list)):
@@ -241,7 +241,7 @@ class MarkerTracker:
                 distances.append(distance)
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
-        if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, expected_ratios)):
+        if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, self.expected_ratios)):
             self.validated_pairs.append(current_list)
             return True
         return False
@@ -261,14 +261,14 @@ class MarkerTracker:
                     closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
                     current_list.append(poses[closest_marker_index])
                     distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
-            if self.validate_marker_pair(current_list, tolerance=0.5):
+            if self.validate_marker_pair(current_list, tolerance=0.8):
                 marker_pairs.append(current_list)
         return marker_pairs
     
     def numerate_markers(self):
         for pairs in self.validated_pairs:
             for i in range(len(pairs)):
-                pairs[i].number = i + 1
+                pairs[i].number = i
 
 
 
