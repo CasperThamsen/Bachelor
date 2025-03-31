@@ -207,7 +207,7 @@ class MarkerTracker:
             noise = 0.08
             if marker_intensity / (reference_intensity + noise) <= 0.5:
                 break
-            ic(marker_intensity)
+            # ic(marker_intensity)
             poses.append(marker)
             radius = 5
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
@@ -230,7 +230,8 @@ class MarkerTracker:
         return distances_between_markers
     
     def validate_marker_pair(self, current_list, tolerance):
-        expected_ratios = [1.0, 1.1018450614583595, 1.1026505053012112, 1.1528713478676889, 1.6395868597466485, 1.7357341510652087, 2.5026905030023316, 2.505888531118552, 2.735731158384941, 2.7365309995290383] 
+        
+        expected_ratios = [1.000000, 0.402761, 0.634468, 0.914816, 0.915985, 0.365533, 0.403055, 0.599323, 1.000292, 0.421413] 
         distances = []
         for i in range(len(current_list)):
             for j in range(i + 1, len(current_list)):
@@ -239,8 +240,8 @@ class MarkerTracker:
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
         normalized_distances.sort()
-        ic(normalized_distances)
         if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, expected_ratios)):
+            ic(normalized_distances)
             return True
         return False
 

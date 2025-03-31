@@ -28,20 +28,21 @@ def main():
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
     marker_positions = [(pose.x, pose.y) for pose in poses]
-    distance_matrix = compute_distance_matrix(marker_positions)
+    distance_matrix = compute_distance_matrix(marker_positions,number_of_markers)
     
     print("Distance Matrix:")
     print(distance_matrix)
 
     valid_distances = distance_matrix[np.triu_indices(distance_matrix.shape[0], k=1)]
     valid_distances = valid_distances[~np.isinf(valid_distances)]  # Remove 'inf' values
-    valid_distances = np.sort(valid_distances)
+    # valid_distances = np.sort(valid_distances)
     
     # Normalize distances using the smallest distance as a base
     base_distance = valid_distances[0]
     expected_ratios = valid_distances / base_distance
     
-    print("Expected Distance Ratios:")
-    print(expected_ratios)
+    formatted_ratios = ", ".join(f"{ratio:.6f}" for ratio in expected_ratios)
+    print("Expected Distance Ratios (formatted):")
+    print(formatted_ratios)
 
 main()
