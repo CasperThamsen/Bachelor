@@ -31,6 +31,9 @@ class MarkerTracker:
         self.orientation = None
         self.track_marker_with_missing_black_leg = True
 
+        #her
+        self.validated_pairs = []
+
         # Create kernel used to remove arm in quality-measure
         (kernel_remove_arm_real, kernel_remove_arm_imag) = self.generate_symmetry_detector_kernel(1, self.kernel_size)
         self.kernelComplex = np.array(kernel_real + 1j*kernel_imag, dtype=complex)
@@ -239,7 +242,7 @@ class MarkerTracker:
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
         if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, expected_ratios)):
-            ic(normalized_distances)
+            self.validated_pairs.append(current_list)
             return True
         return False
 
@@ -261,6 +264,12 @@ class MarkerTracker:
             if self.validate_marker_pair(current_list, tolerance=0.5):
                 marker_pairs.append(current_list)
         return marker_pairs
+    
+    def numerate_markers(self):
+        for pairs in self.validated_pairs:
+            for i in range(len(pairs)):
+                pairs[i].number = i + 1
+
 
 
 
