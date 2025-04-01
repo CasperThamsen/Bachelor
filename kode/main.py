@@ -5,6 +5,11 @@ from icecream import ic
 import time
 
 def main():
+    # Load calibration data
+    calibration_data = np.load('calibration_data.npz')
+    mtx = calibration_data['mtx']
+    dist = calibration_data['dist']
+
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
@@ -18,6 +23,8 @@ def main():
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
     mt.expected_ratios = [1.000000, 1.438993, 1.735489, 2.020540, 2.144925, 2.096221, 2.999138, 2.999155, 2.096223, 2.144939]
+
+    
     while cap.isOpened():
         time_start = time.time()
         ret, img = cap.read()
@@ -31,6 +38,11 @@ def main():
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers()
+
+        #Pose estimation
+        cv2.solvePnP
+
+
 
         #Draw on canvas
         img_pairs_copy=img.copy()
