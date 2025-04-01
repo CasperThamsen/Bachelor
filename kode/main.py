@@ -10,6 +10,7 @@ def main():
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
 
+
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
