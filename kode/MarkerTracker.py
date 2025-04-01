@@ -196,10 +196,11 @@ class MarkerTracker:
         bright_regions = (adjusted_kernel.real < -self.threshold).astype(np.uint8)
         dark_regions = (adjusted_kernel.real > self.threshold).astype(np.uint8)
 
-        return bright_regions, dark_regions      
+        return bright_regions, dark_regions   
+
+    #Casper Code
 
     def detect_multiple_markers(self, frame):
-        start_time = time.time()
         poses = []
         reference_intensity = None
         while True:
@@ -207,19 +208,17 @@ class MarkerTracker:
             marker_intensity = self.frame_sum_squared[int(marker.y), int(marker.x)]
             if reference_intensity is None:
                 reference_intensity = marker_intensity
-            #if there is no intensity withing marker ref, break
+            #noise to remove false positives
             noise = 0.08
+            #if there is no intensity withing marker ref, break
             if marker_intensity / (reference_intensity + noise) <= 0.5:
                 break
-            # ic(marker_intensity)
             poses.append(marker)
             radius = 5
             for y in range(max(0, int(marker.y) - radius), min(self.frame_sum_squared.shape[0], int(marker.y) + radius)):
                 for x in range(max(0, int(marker.x) - radius), min(self.frame_sum_squared.shape[1], int(marker.x) + radius)):
                     self.frame_sum_squared[y, x] = 0
         number_of_markers = len(poses)
-        end_time = time.time()
-        print(f"Time elapsed_detect_multiple_markers: {end_time - start_time}")
     
         return poses, number_of_markers  
 
@@ -234,11 +233,11 @@ class MarkerTracker:
         return distances_between_markers
     
     def validate_marker_pair(self, current_list, tolerance):
+        distance_matrix = self.distances_between_markers(current_list, len(current_list))
         distances = []
         for i in range(len(current_list)):
-            for j in range(i + 1, len(current_list)):
-                distance = np.sqrt((current_list[i].x - current_list[j].x)**2 + (current_list[i].y - current_list[j].y)**2)
-                distances.append(distance)
+            for j in range(i + 1, len(current_list)):  # Only consider i < j to avoid duplicates
+                distances.append(distance_matrix[i][j])
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
         if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, self.expected_ratios)):
