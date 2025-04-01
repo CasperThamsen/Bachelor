@@ -24,30 +24,15 @@ def main():
         if not ret:
             ic("Failed to capture image")
             break
-        # blur = np.random.normal(0.5,0.1,img.shape)
-        # img = (img * blur).astype(np.uint8)
         #unitycoin clean bob lesson1
-
+        #Initialize MarkerTracker functionality
         mt.locate_marker_init(frame = img[:,:,1])
         poses, number_of_markers = mt.detect_multiple_markers(frame=img[:,:,1])
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers()
-    
-        # IC TESTS---------------------------------------------------
-        # ic("distance",poses)
-        # ic(distance_between_markers)
-        # ic(marker_pairs)
-        # ic(number_of_pairs)
 
-        #warning if quality of a marker is low.
-        # for pose in poses:
-        #     if(pose.quality < 0.5):
-        #         ic("Pose quality is low", pose.quality)
-        
-        #opencv video capture
-        #------------------------------------------------------------
-        #This section tests the detect_marker_pair function
+        #Draw on canvas
         img_pairs_copy=img.copy()
         for pair in marker_pairs:
             sorted_pair = sorted(pair, key=lambda pose: pose.number)  # Sort markers by their number
@@ -58,7 +43,7 @@ def main():
         for pose in poses:
             cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
 
-
+        #Save and display the image
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
         screen_width = 1280
