@@ -9,6 +9,15 @@ def main():
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
 
+    #pose related variables
+    marker_length = 0.094
+    obj_points = np.array([
+        [-marker_length / 2, marker_length / 2, 0],  # Top-left corner
+        [marker_length / 2, marker_length / 2, 0],   # Top-right corner
+        [marker_length / 2, -marker_length / 2, 0],  # Bottom-right corner
+        [-marker_length / 2, -marker_length / 2, 0]  # Bottom-left corner
+    ], dtype=np.float32)
+
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
@@ -21,8 +30,7 @@ def main():
                                 kernel_size=25,
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
-    mt.expected_ratios = [1.000000, 1.438993, 1.735489, 2.020540, 2.144925, 2.096221, 2.999138, 2.999155, 2.096223, 2.144939]
-
+    mt.expected_ratios = [1.000000, 1.735489, 2.020540, 1.438993, 2.096221, 2.999138, 2.144925, 2.144939, 2.999155, 2.096223]
     
     while cap.isOpened():
         ret, img = cap.read()
@@ -36,7 +44,7 @@ def main():
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers()
-        corners = mt.marker_cornors(marker_pairs)
+        # corners = mt.marker_corners(marker_pairs)
 
 
 
@@ -50,10 +58,36 @@ def main():
             for i in range(len(sorted_pair)):
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
         for pose in poses:
-            if pose not in corners:
+            # if pose not in corners:
                 cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
-        for _, corner in enumerate(corners):
-            cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
+        # for _, corner in enumerate(corners):
+        #     cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
+
+
+        # if marker_pairs is not None:
+        #     rvecs = []            
+        #     tvecs = []
+        #     text_offset = 0
+
+        #     for corner in corners:
+        #         img_points = np.array(marker_corner[0], dtype=np.float32)
+        #         success, rvec, tvec = cv2.solvePnP(obj_points, img_points, mtx, dist)
+        #         if success:
+        #             rvecs.append(rvec)
+        #             tvecs.append(tvec)
+        #             # Draw axis for each detected marker
+        #             axis_length = marker_length / 2
+        #             axis_points = np.array([ 
+        #                 [axis_length, 0, 0],    # X-axis
+        #                 [0, axis_length, 0],    # Y-axis
+        #                 [0, 0, axis_length]     # Z-axis
+        #             ], dtype=np.float32)
+
+        #             cv2.drawFrameAxes(img, mtx, dist, rvec, tvec, marker_length*1.5,2)
+
+        #             # Display the translation vector (tvec) on the image
+        #             cv2.putText(img, f"tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        #             text_offset += 20
 
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
