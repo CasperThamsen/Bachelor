@@ -27,7 +27,7 @@ def sort_by_sum(poses):
     sorted_poses = [poses[i] for i in sorted_indices]
     return sorted_poses
 
-def order_clockwise(sorted_poses,poses):
+def order_anticlockwise(sorted_poses,poses):
     desired_order = []
     middle_marker = sorted_poses[0]
     top_left_corner = sorted_poses[1]
@@ -38,12 +38,10 @@ def order_clockwise(sorted_poses,poses):
     remaining_markers = [pose for pose in sorted_poses if pose not in desired_order]
     angles = [(pose, angle_between_vectors(ref_vector, np.array([pose.x - middle_marker.x, pose.y - middle_marker.y]))) for pose in remaining_markers]
     
-    angles.sort(key=lambda x: x[1], reverse=True)
+    angles.sort(key=lambda x: x[1])
     for marker, _ in angles:
-        print("angles", angles)
-        print("marker", marker)
         desired_order.append(marker)
-        print("desired_order", desired_order)
+    print("desired_order", desired_order)
     return desired_order
 
 def angle_between_vectors(v1, v2):
@@ -57,11 +55,11 @@ def main():
                                       scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
     
-    img = cv2.imread('findrelation2.jpg')
+    img = cv2.imread('findrelation.jpg')
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
     sorted_poses = sort_by_sum(poses)
-    desired_order = order_clockwise(sorted_poses,poses)
+    desired_order = order_anticlockwise(sorted_poses,poses)
     normalized_distances = compute_normalized_distances(desired_order, number_of_markers)
 
     expected_ratios = normalized_distances
@@ -72,17 +70,16 @@ def main():
 
     img_pairs_copy = img.copy()
     for i, pose in enumerate(poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x+20), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x+20), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)
     for i, pose in enumerate(sorted_poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x-20), int(pose.y-20)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0, 255), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x-20), int(pose.y-20)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0, 255), 2)
     for i, pose in enumerate(desired_order):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)
     cv2.putText(img_pairs_copy, "Green: detected order", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(img_pairs_copy, "Red: sorted order", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     cv2.putText(img_pairs_copy, "Blue: desired order", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    imshow = cv2.resize(img_pairs_copy, (800, 600))
     cv2.namedWindow("Sorted Markers", cv2.WINDOW_NORMAL)
-    cv2.imshow("Sorted Markers", imshow)
+    cv2.imshow("Sorted Markers", img_pairs_copy)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
