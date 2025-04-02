@@ -269,13 +269,13 @@ class MarkerTracker:
             for i in range(len(pairs)):
                 pairs[i].number = i
 
-    def marker_cornors(self, marker_pairs):
-        corners = []
-        for pairs in marker_pairs:
-            for pair in pairs:
-                if pair.number != 0:
-                    corners.append(pair)
-        return corners
+    # def marker_cornors(self, marker_pairs):
+    #     corners = []
+    #     for pairs in marker_pairs:
+    #         for pair in pairs:
+    #             if pair.number != 0:
+    #                 corners.append(pair)
+    #     return corners
 
 
 
