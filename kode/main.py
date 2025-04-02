@@ -2,7 +2,6 @@ import cv2
 import MarkerTracker as MarkerTracker
 import numpy as np
 from icecream import ic
-import time
 
 def main():
     # Load calibration data
@@ -26,7 +25,6 @@ def main():
 
     
     while cap.isOpened():
-        time_start = time.time()
         ret, img = cap.read()
         if not ret:
             ic("Failed to capture image")
@@ -39,7 +37,6 @@ def main():
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers()
         corners = mt.marker_cornors(marker_pairs)
-        ic(corners)
 
 
 
@@ -55,20 +52,18 @@ def main():
         for pose in poses:
             if pose not in corners:
                 cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
-        cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
+        for _, corner in enumerate(corners):
+            cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
 
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
         screen_width = 1280
         screen_height = 720
         cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
-        time_end = time.time()
-        ic("Time used: main", time_end-time_start)
         cv2.imshow("sorted_pairs_test", img_pairs_copy)
 
         if cv2.waitKey(1) == ord('q'):
             break
-        print("new frame")
     cap.release()
     out.release()
     cv2.destroyAllWindows()
