@@ -260,8 +260,8 @@ class MarkerTracker:
                     closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
                     current_list.append(poses[closest_marker_index])
                     distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
-            if self.validate_marker_pair(current_list, tolerance=0.8):
-                marker_pairs.append(current_list)
+                if self.validate_marker_pair(current_list, tolerance=0.8):
+                    marker_pairs.append(current_list)
         return marker_pairs
     
     def numerate_markers(self):
@@ -269,6 +269,13 @@ class MarkerTracker:
             for i in range(len(pairs)):
                 pairs[i].number = i
 
+    def marker_cornors(self, marker_pairs):
+        corners = []
+        for pairs in marker_pairs:
+            for pair in pairs:
+                if pair.number != 0:
+                    corners.append(pair)
+        return corners
 
 
 
