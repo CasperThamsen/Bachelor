@@ -10,7 +10,6 @@ def main():
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
 
-
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
@@ -39,9 +38,9 @@ def main():
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers()
+        corners = mt.marker_cornors(marker_pairs)
+        ic(corners)
 
-        #Pose estimation
-        cv2.solvePnP
 
 
 
@@ -54,9 +53,10 @@ def main():
             for i in range(len(sorted_pair)):
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
         for pose in poses:
-            cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
+            if pose not in corners:
+                cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
+        cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
 
-        #Save and display the image
         out.write(img_pairs_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
         screen_width = 1280
@@ -68,9 +68,11 @@ def main():
 
         if cv2.waitKey(1) == ord('q'):
             break
+        print("new frame")
     cap.release()
     out.release()
     cv2.destroyAllWindows()
     #------------------------------------------------------------
+    
 
 main()
