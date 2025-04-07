@@ -10,6 +10,7 @@ import math
 from MarkerPose import MarkerPose
 from icecream import ic
 import time
+from itertools import permutations
 
 
 class MarkerTracker:
@@ -240,28 +241,35 @@ class MarkerTracker:
                 distances.append(distance_matrix[i][j])
         base_distance = min(distances)
         normalized_distances = [distance / base_distance for distance in distances]
-        if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, self.expected_ratios)):
-            self.validated_pairs.append(current_list)
-            return True
+        if normalized_distances[0] == 1.0:
+            ic(normalized_distances)
+            if all(abs(nd - er) < tolerance for nd, er in zip(normalized_distances, self.expected_ratios)):
+                self.validated_pairs.append(current_list)
+                return True
         return False
 
     def detect_marker_pairs(self,poses,distances_between_markers):
         marker_pairs = []
         distances_between_markers_copy = distances_between_markers.copy()
-        for pose in poses:
-            if not any(pose in pair for pair in marker_pairs):
-                current_list = []
-                current_distances = []
-                current_list.append(pose)
-                for _ in range(4):
-                    current_pose_index = poses.index(pose)
-                    closest_marker = min(distances_between_markers_copy[current_pose_index])
-                    current_distances.append(closest_marker)
-                    closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
-                    current_list.append(poses[closest_marker_index])
-                    distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
-                if self.validate_marker_pair(current_list, tolerance=0.8):
-                    marker_pairs.append(current_list)
+        if len(poses) >= 5:
+            for pose in poses:
+                if not any(pose in pair for pair in marker_pairs):
+                    current_list = []
+                    current_list.append(pose)
+                    for _ in range(4):
+                        current_pose_index = poses.index(pose)
+                        closest_marker = min(distances_between_markers_copy[current_pose_index])
+                        closest_marker_index = distances_between_markers_copy[current_pose_index].index(closest_marker)
+                        current_list.append(poses[closest_marker_index])
+                        distances_between_markers_copy[current_pose_index][closest_marker_index] = np.inf
+                    permutations_list = permutations(current_list[1:])
+                    for perm in permutations_list:
+                        current_list = [current_list[0]] + list(perm)
+                        if self.validate_marker_pair(current_list, tolerance=0.8):
+                            marker_pairs.append(current_list)
+                            break
+        print("break")
+        ic(marker_pairs)
         return marker_pairs
     
     def numerate_markers(self):

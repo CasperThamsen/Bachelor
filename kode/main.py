@@ -30,7 +30,7 @@ def main():
                                 kernel_size=25,
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
-    mt.expected_ratios = [1.000000, 2.787259, 2.994163, 1.481961, 3.317809, 3.930061, 2.106545, 2.106545, 3.930063, 3.317809]
+    mt.expected_ratios = [1.000000, 1.420254, 2.041146, 1.774673, 2.153348, 3.011110, 2.104941, 2.104725, 3.011106, 2.153135]
     
     while cap.isOpened():
         ret, img = cap.read()
