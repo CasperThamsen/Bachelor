@@ -43,8 +43,8 @@ def main():
         poses, number_of_markers = mt.detect_multiple_markers(frame=img[:,:,1])
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
-        mt.numerate_markers()
-        # corners = mt.marker_corners(marker_pairs)
+        mt.numerate_markers(marker_pairs)
+        corners = mt.marker_corners(marker_pairs)
 
 
 
@@ -58,10 +58,10 @@ def main():
             for i in range(len(sorted_pair)):
                 cv2.putText(img_pairs_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
         for pose in poses:
-            # if pose not in corners:
+            if pose.number != 1:
                 cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
-        # for _, corner in enumerate(corners):
-        #     cv2.circle(img_pairs_copy, (int(corners[0].x), int(corners[0].y)), 5, (255, 0, 0), -1)
+            elif pose.number == 1:
+                cv2.circle(img_pairs_copy, (int(pose.x), int(pose.y)), 5, (255, 0, 0), -1)
 
 
         # if marker_pairs is not None:
