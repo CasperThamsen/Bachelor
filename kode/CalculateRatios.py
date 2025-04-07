@@ -82,5 +82,6 @@ def main():
     cv2.imshow("Sorted Markers", img_pairs_copy)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    np.savez(r'C:\Users\caspe\Workspace\Bachelor\validation_ratios.npz', ratios=expected_ratios)
 
 main()

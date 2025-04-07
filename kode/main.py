@@ -8,6 +8,8 @@ def main():
     calibration_data = np.load('calibration_data.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
+    validation_ratios = np.load('validation_ratios.npz')
+    ratios = validation_ratios['ratios']
 
     #pose related variables
     marker_length = 0.094
@@ -30,7 +32,7 @@ def main():
                                 kernel_size=25,
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
-    mt.expected_ratios = [1.000000, 1.420254, 2.041146, 1.774673, 2.153348, 3.011110, 2.104941, 2.104725, 3.011106, 2.153135]
+    mt.expected_ratios = ratios
     
     while cap.isOpened():
         ret, img = cap.read()
