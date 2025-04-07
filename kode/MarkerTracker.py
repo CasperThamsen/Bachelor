@@ -262,7 +262,7 @@ class MarkerTracker:
                     permutations_list = permutations(current_list[1:])
                     for perm in permutations_list:
                         current_list = [current_list[0]] + list(perm)
-                        if self.validate_marker_pair(current_list, tolerance=0.8):
+                        if self.validate_marker_pair(current_list, tolerance=0.5):
                             marker_pairs.append(current_list)
                             break
         return marker_pairs
