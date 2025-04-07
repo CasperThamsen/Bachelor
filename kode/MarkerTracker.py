@@ -273,12 +273,16 @@ class MarkerTracker:
                 pairs[i].number = i
 
     def marker_corners(self, marker_pairs):
-        corners = []
+        marker_corners = []
         for pairs in marker_pairs:
+            corners = []
             for pair in pairs:
                 if pair.number != 0:
-                    corners.append(pair)
-        return corners
+                    corners.append([pair.x, pair.y])
+            corners = np.array(corners, dtype=np.float32).reshape(1, 4, 2) #reshape to match aruco format
+            marker_corners.append(corners)
+        return marker_corners
+
 
 
 
