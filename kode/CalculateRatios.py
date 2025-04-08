@@ -50,12 +50,16 @@ def angle_between_vectors(v1, v2):
 
 
 def main():
+    #PICTURE PATH HERE
+    img = cv2.imread('lufthavn.png')
+    #PICTURE PATH HERE
+
+
+
     mt = MarkerTracker.MarkerTracker(order=4,  # number of shaded regions
                                       kernel_size=30,
                                       scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
-    
-    img = cv2.imread('findrelationa3q.jpg')
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
     sorted_poses = sort_by_sum(poses)

@@ -70,11 +70,12 @@ def main():
         #         cv2.line(img_copy, (int(sorted_pair[i].x), int(sorted_pair[i].y)), (int(sorted_pair[(i+1)].x), int(sorted_pair[(i+1)].y)), (0, 255, 0), 4)
         #     for i in range(len(sorted_pair)):
         #         cv2.putText(img_copy, str(sorted_pair[i].number), (int(sorted_pair[i].x), int(sorted_pair[i].y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-        # for pose in poses:
-        #     if pose.number != 1:
-        #         cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
-        #     elif pose.number == 1:
-        #         cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (255, 0, 0), -1)
+        
+        for pose in poses:
+            if pose.number != 1:
+                cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
+            elif pose.number == 1:
+                cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (255, 0, 0), -1)
 
 
         if marker_pairs is not None or marker_ids is not None:
@@ -84,7 +85,7 @@ def main():
             aruco.drawDetectedMarkers(img_copy, marker_corners_n)
             aruco.drawDetectedMarkers(img_copy, marker_corners_aruco, marker_ids)
 
-            for marker_corner in marker_corners:
+            for i, marker_corner in enumerate(marker_corners):
                 img_points = np.array(marker_corner[0], dtype=np.float32)
                 success, rvec, tvec = cv2.solvePnP(obj_points, img_points, mtx, dist)
                 if success:
@@ -101,7 +102,11 @@ def main():
                     cv2.drawFrameAxes(img_copy, mtx, dist, rvec, tvec, marker_length*1.5,2)
 
                     # Display the translation vector (tvec) on the image
-                    cv2.putText(img_copy, f"tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    if i < len(marker_corners_n):
+                        marker_type = "n-fold"
+                    else:
+                        marker_type = "Aruco"
+                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
 
         out.write(img_copy)
