@@ -25,6 +25,7 @@ def main():
     detector_params = aruco.DetectorParameters()
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
+    #---------------------------------------------------------------
 
     cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
@@ -35,7 +36,7 @@ def main():
                         20.0, 
                         frame_size)
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
-                                kernel_size=25,
+                                kernel_size=30,
                                 scale_factor=100)
     mt.track_marker_with_missing_black_leg = False
     mt.expected_ratios = ratios
