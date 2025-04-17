@@ -6,7 +6,7 @@ import cv2.aruco as aruco
 
 def main():
     # Load calibration data
-    calibration_data = np.load('calibration_data.npz')
+    calibration_data = np.load('webcam_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
     validation_ratios = np.load('validation_ratios.npz')
