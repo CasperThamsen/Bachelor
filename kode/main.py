@@ -7,7 +7,7 @@ import csv
 
 def main():
     # Load calibration data
-    calibration_data = np.load('calibration_data.npz')
+    calibration_data = np.load('phone_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
     validation_ratios = np.load('validation_ratios.npz')
@@ -28,23 +28,21 @@ def main():
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
 
-
-    with open("seb.csv", "w", newline="") as csvfile:
-        writer = csv.writer(csvfile)
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture('C:/Users/caspe/Workspace/Bachelor/airporttestfiles/5markerrotation2.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('livetest.mp4', 
+    out = cv2.VideoWriter('5markerrotation2pose.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
-                                kernel_size=30,
-                                scale_factor=100)
+                                kernel_size=20,
+                                scale_factor=1)
     mt.track_marker_with_missing_black_leg = False
     mt.expected_ratios = ratios
-    
+    with open("seb.csv", "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
     while cap.isOpened():
         ret, img = cap.read()
         if not ret:
@@ -81,7 +79,6 @@ def main():
                 cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (0, 0, 255), -1)
             elif pose.number == 1:
                 cv2.circle(img_copy, (int(pose.x), int(pose.y)), 5, (255, 0, 0), -1)
-
 
         if marker_pairs is not None or marker_ids is not None:
             rvecs = []            
@@ -121,17 +118,15 @@ def main():
                 if i < len(marker_corners_n):
                     marker_type = "n-fold"
                 else:
-                    marker_type = "Aruco, {marker_ids}"
+                    marker_type = f"Aruco, {marker_ids[i-len(marker_corners_n)]}"
                 writer.writerow([tvec.flatten(), marker_type])
-
-
+          
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
-        screen_width = 1280
-        screen_height = 720
-        cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
+        # screen_width = 1280
+        # screen_height = 720
+        # cv2.resizeWindow("sorted_pairs_test", screen_width, screen_height)
         cv2.imshow("sorted_pairs_test", img_copy)
-
         if cv2.waitKey(1) == ord('q'):
             break
     cap.release()
