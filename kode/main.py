@@ -27,12 +27,12 @@ def main():
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
-
-    cap = cv2.VideoCapture('C:/Users/caspe/Workspace/Bachelor/airporttestfiles/5markerrotation2.mp4')
+    #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
+    cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('5markerrotation2pose.mp4', 
+    out = cv2.VideoWriter('live2.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)

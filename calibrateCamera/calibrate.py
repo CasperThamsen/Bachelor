@@ -58,7 +58,7 @@ and corresponding pixel coordinates of the
 detected corners (imgpoints)
 """
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
-np.savez('calibration_data.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+np.savez('phone_calibration.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
 
 
 print("Camera matrix : \n")
