@@ -3,17 +3,18 @@ import MarkerTracker as MarkerTracker
 import numpy as np
 from icecream import ic
 import cv2.aruco as aruco
+import csv
 
 def main():
     # Load calibration data
-    calibration_data = np.load('webcam_calibration.npz')
+    calibration_data = np.load('calibration_data.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
     validation_ratios = np.load('validation_ratios.npz')
     ratios = validation_ratios['ratios']
 
     #pose related variables
-    marker_length = 0.14
+    marker_length = 0.15
     obj_points = np.array([
         [-marker_length / 2, marker_length / 2, 0],  # Top-left corner
         [marker_length / 2, marker_length / 2, 0],   # Top-right corner
@@ -27,11 +28,14 @@ def main():
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
 
-    cap = cv2.VideoCapture(0)
+
+    with open("seb.csv", "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+    cap = cv2.VideoCapture(1)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('livetest2.mp4', 
+    out = cv2.VideoWriter('livetest.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)
@@ -109,6 +113,17 @@ def main():
                         marker_type = "Aruco"
                     cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
+        #Write csv file
+        with open("seb.csv", "a",  newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(["x", "y", "z"])
+            for i, tvec in enumerate(tvecs):
+                if i < len(marker_corners_n):
+                    marker_type = "n-fold"
+                else:
+                    marker_type = "Aruco, {marker_ids}"
+                writer.writerow([tvec.flatten(), marker_type])
+
 
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
