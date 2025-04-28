@@ -28,12 +28,12 @@ def main():
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    csv_file_name = '5markervid2.csv'
+    csv_file_name = '5markerrotationpose.csv'
     cap = cv2.VideoCapture('5markerrotation.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('5markervid2pose.mp4', 
+    out = cv2.VideoWriter('5markerrotationpose.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)
@@ -109,20 +109,21 @@ def main():
                         marker_type = "n-fold"
                     else:
                         marker_type = "Aruco"
-                    print(f"Marker {i}: tvec: {tvec.flatten()}, rvec: {rvec.flatten()}")
                     cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
         with open(csv_file_name, "a",  newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["x", "y", "z"])
+            if not tvecs:
+                writer.writerow(["x","y","z"])
             for i, tvec in enumerate(tvecs):
                 if i < len(marker_corners_n):
                     marker_type = "n-fold"
                 else:
                     marker_type = f"Aruco, {marker_ids[i-len(marker_corners_n)]}"
-                writer.writerow([frame_number,tvec.flatten(), marker_type])
+                writer.writerow([frame_number,tvec.flatten(),rvec.flatten(), marker_type])
+
           
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
