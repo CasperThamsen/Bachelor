@@ -28,11 +28,12 @@ def main():
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    cap = cv2.VideoCapture(0)
+    csv_file_name = '5markervid2.csv'
+    cap = cv2.VideoCapture('5markervid2.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('live2.mp4', 
+    out = cv2.VideoWriter('5markervid2pose.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         20.0, 
                         frame_size)
@@ -41,7 +42,7 @@ def main():
                                 scale_factor=1)
     mt.track_marker_with_missing_black_leg = False
     mt.expected_ratios = ratios
-    with open("seb.csv", "w", newline="") as csvfile:
+    with open(csv_file_name, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
     while cap.isOpened():
         ret, img = cap.read()
@@ -111,7 +112,8 @@ def main():
                     cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
-        with open("seb.csv", "a",  newline="") as csvfile:
+        frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+        with open(csv_file_name, "a",  newline="") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["x", "y", "z"])
             for i, tvec in enumerate(tvecs):
@@ -119,7 +121,7 @@ def main():
                     marker_type = "n-fold"
                 else:
                     marker_type = f"Aruco, {marker_ids[i-len(marker_corners_n)]}"
-                writer.writerow([tvec.flatten(), marker_type])
+                writer.writerow([frame_number,tvec.flatten(), marker_type])
           
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
