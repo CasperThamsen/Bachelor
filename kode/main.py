@@ -112,17 +112,26 @@ def main():
                     cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
+        closest_aruco_ids = []  # Store closest ArUco IDs for each n-fold marker
+        for i, tvec_nfold in enumerate(tvecs[:len(marker_corners_n)]):  # Iterate over n-fold markers
+            closest_aruco_id = None
+            min_distance = float('inf')
+            for j, tvec_aruco in enumerate(tvecs[len(marker_corners_n):]):  # Iterate over ArUco markers
+                distance = np.linalg.norm(np.array(tvec_nfold) - np.array(tvec_aruco))  # Euclidean distance
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_aruco_id = marker_ids[j]  # Get the ArUco marker ID
+            closest_aruco_ids.append(closest_aruco_id)
+
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
         with open(csv_file_name, "a",  newline="") as csvfile:
             writer = csv.writer(csvfile)
-            if not tvecs:
-                writer.writerow(["x","y","z"])
             for i, tvec in enumerate(tvecs):
                 if i < len(marker_corners_n):
-                    marker_type = "n-fold"
+                    marker_type = closest_aruco_ids[i] + 10
                 else:
-                    marker_type = f"Aruco, {marker_ids[i-len(marker_corners_n)]}"
-                writer.writerow([frame_number,tvec.flatten(),rvec.flatten(), marker_type])
+                    marker_type = marker_ids[i-len(marker_corners_n)]
+                writer.writerow([frame_number,tvec[0][0],tvec[1][0],tvec[2][0],rvec[0][0],rvec[1][0],rvec[2][0], int(marker_type)])
 
           
         out.write(img_copy)

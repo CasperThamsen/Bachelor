@@ -1,16 +1,17 @@
+import matplotlib.pyplot as plt
+import numpy as np
 import csv
 
-with open("airporttestfiles/5markerrotation.csv", "r") as file:
-    reader = csv.reader(file)
+with open("airporttestfiles/5markerrotation.csv", "r") as opti_file:
+    reader = csv.reader(opti_file)
     header = next(reader)  # Skip the header row
     data = [row for row in reader]
 
-with open("airporttestfiles/5markerrotationoutput.csv", 'w',newline='') as output_file:
-    writer = csv.writer(output_file)
-    writer.writerow(["t,dx","dy","dz","rx","ry","rz"])
-    time_start = float(data[0][0])
+
+with open("airporttestfiles/5markerrotationoutput.csv", 'w',newline='') as opti_output:
+    writer = csv.writer(opti_output)
     for row in data:
-        time = float(row[0])-time_start
+        time = float(row[0])
         x1, y1, z1 = map(float, row[1:4])
         x2,y2,z2 = map(float, row[7:10])
         rx1,ry1,rz1 = map(float, row[4:7])
@@ -21,7 +22,7 @@ with open("airporttestfiles/5markerrotationoutput.csv", 'w',newline='') as outpu
         rx = rx2 - rx1
         ry = rz2 - rz1
         rz = ry2 - ry1
-        writer.writerow([time,dx,dy,dz,rx,ry,rz])
+        writer.writerow([time, dx, dy, dz, rx, ry, rz])
 
 
 
