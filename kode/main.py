@@ -29,7 +29,7 @@ def main():
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
     csv_file_name = '5markervid2.csv'
-    cap = cv2.VideoCapture('5markervid2.mp4')
+    cap = cv2.VideoCapture('5markerrotation.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
@@ -109,7 +109,8 @@ def main():
                         marker_type = "n-fold"
                     else:
                         marker_type = "Aruco"
-                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    print(f"Marker {i}: tvec: {tvec.flatten()}, rvec: {rvec.flatten()}")
+                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
