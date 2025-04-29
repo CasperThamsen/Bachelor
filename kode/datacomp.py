@@ -8,9 +8,9 @@ import csv
 # rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv"
 # rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv"
 # Data_name = "5markerrotation1"
-# pose_start_time = 63
+# pose_start_time = 65
 # opti_start_time = 1744193042.0
-# duration_of_video = 1450 # 1450 frames at 20 fps = 72.5 seconds (VLC)
+# duration_of_video = 1450
 
 
 # #Rotation2
@@ -19,7 +19,7 @@ import csv
 # Data_name = "5markerrotation2"
 # opti_start_time = 1744193157.0
 # pose_start_time = 66
-# duration_of_video = 910 
+# duration_of_video = 910
 
 
 
