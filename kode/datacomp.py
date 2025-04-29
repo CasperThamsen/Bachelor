@@ -9,68 +9,59 @@ rot1pose = np.loadtxt(rot1poseLoc, delimiter=',')
 
 pose_start_time = 63
 opti_start_time = 1744193042.0
-duration_of_video = 1450
+duration_of_video = 1450 # 1450 frames at 20 fps = 72.5 seconds (VLC)
+hz = 30/100
+best_shift = None
+best_opti_shifted = None
+best_error = float('inf')
 
-i = 0
-index = pose_start_time
-last_time = None
-for i in range(len(rot1opti)):
-    current_time = rot1opti[i][0]
-    if current_time >= opti_start_time:
-        if last_time is not None and current_time > last_time + 0.33:
-            missing_frames = int((current_time - last_time) / 0.33)
-            index += missing_frames 
-            print(f"Missing frames: {missing_frames} at time {index}")
-        rot1opti[i][0] = index
-        index += 1
-        last_time = current_time
-        if index > 1450:
-            break
-
-#write a new file consisting only of the rows with a frame number between 0 and 1450
-rot1opti = rot1opti[rot1opti[:,0] <= 1450]
-rot1opti = rot1opti[rot1opti[:,0] >= 63]
-rot1opti = rot1opti[rot1opti[:,0].argsort()]
-#do the same for rot1pose
-rot1pose = rot1pose[rot1pose[:,0] <= 1450]
-rot1pose = rot1pose[rot1pose[:,0] >= 63]
-rot1pose = rot1pose[rot1pose[:,0].argsort()]
-
-rot1opticsv = np.savetxt("optitrackdata.csv", rot1opti, delimiter=",",fmt='%.7f')
-rot1posecsv = np.savetxt("posedata.csv", rot1pose, delimiter=",",fmt='%.7f')
-rot1optiLoc2 = "optitrackdata.csv"
-rot1poseLoc2 = "posedata.csv"
-
-optival = np.loadtxt(rot1optiLoc2, delimiter=',')
-poseval = np.loadtxt(rot1poseLoc2, delimiter=',')
+for shift in range(int(-30/hz), int(30/hz)):
+    shifted_opti_start_time = opti_start_time + shift * hz
+    opti_shifted = rot1opti.copy()
+    index = pose_start_time
+    last_time = None
+    total_time_missing = 0
+    for i in range(len(opti_shifted)):
+        current_time = opti_shifted[i][0]
+        if current_time >= shifted_opti_start_time:
+            if last_time is not None and current_time > last_time + hz:
+                missing_frames = int((current_time - last_time) / hz)
+                index += missing_frames 
+                total_time_missing += missing_frames
+                # print(f"Missing frames: {missing_frames} at time {index}, In seconds: {missing_frames*hz}")
+            opti_shifted[i][0] = index
+            index += 1
+            last_time = current_time
+            if index > duration_of_video:
+                break
 
 
+    opti_shifted = opti_shifted[(opti_shifted[:,0] >= pose_start_time) & (opti_shifted[:,0] <= duration_of_video)]
+    opti_shifted = opti_shifted[opti_shifted[:,0].argsort()]
+    common_frames = np.intersect1d(opti_shifted[:,0], rot1pose[:,0])
 
+    pose_pos = []
+    opti_pos = []
+    for frame in common_frames:
+        pose_rows = rot1pose[rot1pose[:,0] == frame, 1:4]
+        opti_rows= opti_shifted[opti_shifted[:,0] == frame, 1:4]
+        opti_duplicate = np.repeat(opti_rows, len(pose_rows), axis=0)
+        pose_pos.append(pose_rows)
+        opti_pos.append(opti_duplicate)
+    pose_pos = np.vstack(pose_pos)
+    opti_pos = np.vstack(opti_pos)
 
+    #RMS error
+    RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
+    if RMSE < best_error:
+        best_error = RMSE
+        best_shift = shift
+        best_opti_shifted = opti_shifted.copy()
+        print(f"Best shift {best_shift*hz}, RMSE: {RMSE}, shift: {shift}")
+        print(total_time_missing)
 
-# fig1, ax1 = plt.subplots()
-# fig2, ax2 = plt.subplots()
-# #compare the data sets visually (maybe matching?)
-# #for x,y,z
-# ax1.plot(optival[:,0], optival[:,1], '.r')
-# ax1.plot(optival[:,0], optival[:,2], '.y')
-# ax1.plot(optival[:,0], optival[:,3], '.b')
-# ax1.plot(optival[:,0], optival[:,4], '.c')
-# ax1.plot(optival[:,0], optival[:,5], '.m')
-# ax1.plot(optival[:,0], optival[:,6], '.g')
-# ax1.set_title("Optitrack data")
-# ax2.plot(poseval[:,0], poseval[:,1], '.r')
-# ax2.plot(poseval[:,0], poseval[:,2], '.y')
-# ax2.plot(poseval[:,0], poseval[:,3], '.b')
-# ax2.plot(poseval[:,0], poseval[:,4], '.c')
-# ax2.plot(poseval[:,0], poseval[:,5], '.m')
-# ax2.plot(poseval[:,0], poseval[:,6], '.g')
-# ax2.set_title("Pose data")
-# ax1.set_xlabel("Frame number")
-# ax1.set_ylabel("Position (m)")
-# ax2.set_xlabel("Frame number")
-# ax2.set_ylabel("Position (m)")
-# plt.show()
+# print(f"Best shift: {best_shift*hz}")
+# print(f"Best RMSE: {best_error}")
 
-
-
+np.savetxt("optitrackdata.csv", opti_shifted, delimiter=",", fmt='%.7f')
+np.savetxt("posedata.csv", rot1pose, delimiter=",", fmt='%.7f')
