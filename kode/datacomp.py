@@ -7,19 +7,21 @@ import csv
 #Rotation1
 # rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv"
 # rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv"
-# Data_name = "5markerrotation1"
+# Data_name = "rotation1"
+# save_name = "rotation1shifted.csv"
 # pose_start_time = 65
 # opti_start_time = 1744193042.0
 # duration_of_video = 1450
 
 
 # #Rotation2
-# rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv"
-# rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv"
-# Data_name = "5markerrotation2"
-# opti_start_time = 1744193157.0
-# pose_start_time = 66
-# duration_of_video = 910
+rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv"
+rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv"
+Data_name = "rotation2"
+save_name = "rotation2shifted.csv"
+opti_start_time = 1744193157.0
+pose_start_time = 66
+duration_of_video = 910
 
 
 
@@ -65,21 +67,23 @@ for shift in range(int(-30/hz), int(30/hz)):
         opti_pos.append(opti_duplicate)
     pose_pos = np.vstack(pose_pos)
     opti_pos = np.vstack(opti_pos)
-
+    pose_filtered = rot1pose[rot1pose[:,0] >= pose_start_time]
     #RMS error
     RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
     if RMSE < best_error:
         best_error = RMSE
         best_shift = shift
         best_opti_shifted = opti_shifted.copy()
+        opti_shifted = np.unique(opti_shifted,axis=0)
+        np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
+        np.savetxt(save_name, pose_filtered, delimiter=",", fmt='%.7f')
         print(f"Best shift {best_shift*hz}, RMSE: {RMSE}, shift: {shift}")
         print(total_time_missing)
 
 # print(f"Best shift: {best_shift*hz}")
 # print(f"Best RMSE: {best_error}")
 
-# np.savetxt("markerrotation2optitrack.csv", opti_shifted, delimiter=",", fmt='%.7f')
-# np.savetxt("markerrotation2pose.csv", rot1pose, delimiter=",", fmt='%.7f')
+
 new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]
 with open("best_shifts.csv", "a", newline="") as f:
     writer = csv.writer(f)
