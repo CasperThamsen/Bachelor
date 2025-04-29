@@ -35,7 +35,7 @@ def main():
     frame_size = (frame_width, frame_height)
     out = cv2.VideoWriter('5markerrotationpose.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
-                        20.0, 
+                        30.0, 
                         frame_size)
     mt = MarkerTracker.MarkerTracker(order = 4, #number of shaded regions
                                 kernel_size=20,
