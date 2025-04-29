@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 
-with open("airporttestfiles/5markerrotation.csv", "r") as opti_file:
+with open("airporttestfiles/5markerrotation2.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
     header = next(reader)  # Skip the header row
     data = [row for row in reader]
 
 
-with open("airporttestfiles/5markerrotationoutput.csv", 'w',newline='') as opti_output:
+with open("airporttestfiles/5markerrotation2output.csv", 'w',newline='') as opti_output:
     writer = csv.writer(opti_output)
     for row in data:
         time = float(row[0])

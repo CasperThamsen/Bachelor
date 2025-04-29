@@ -1,15 +1,30 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
-rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv"
-rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv"
+
+
+#Rotation1
+# rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv"
+# rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv"
+# Data_name = "5markerrotation1"
+# pose_start_time = 63
+# opti_start_time = 1744193042.0
+# duration_of_video = 1450 # 1450 frames at 20 fps = 72.5 seconds (VLC)
+
+
+# #Rotation2
+# rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv"
+# rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv"
+# Data_name = "5markerrotation2"
+# opti_start_time = 1744193157.0
+# pose_start_time = 66
+# duration_of_video = 910 
+
+
+
 rot1opti = np.loadtxt(rot1optiLoc, delimiter=',')
 rot1pose = np.loadtxt(rot1poseLoc, delimiter=',')
-
-
-pose_start_time = 63
-opti_start_time = 1744193042.0
-duration_of_video = 1450 # 1450 frames at 20 fps = 72.5 seconds (VLC)
 hz = 30/100
 best_shift = None
 best_opti_shifted = None
@@ -63,5 +78,9 @@ for shift in range(int(-30/hz), int(30/hz)):
 # print(f"Best shift: {best_shift*hz}")
 # print(f"Best RMSE: {best_error}")
 
-np.savetxt("optitrackdata.csv", opti_shifted, delimiter=",", fmt='%.7f')
-np.savetxt("posedata.csv", rot1pose, delimiter=",", fmt='%.7f')
+# np.savetxt("markerrotation2optitrack.csv", opti_shifted, delimiter=",", fmt='%.7f')
+# np.savetxt("markerrotation2pose.csv", rot1pose, delimiter=",", fmt='%.7f')
+new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]
+with open("best_shifts.csv", "a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(new_data)
