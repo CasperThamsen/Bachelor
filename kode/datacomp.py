@@ -3,28 +3,8 @@ import cv2
 import numpy as np
 import icecream as ic
 import csv
+from dataset_configs import datasets
 
-
-datasets = {
-    "rotation1": {
-        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv",
-        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv",
-        "Data_name": "rotation1",
-        "save_name": "rotation1shifted.csv",
-        "pose_start_time": 65,
-        "opti_start_time": 1744193042.0,
-        "duration_of_video": 1450,
-    },
-    "rotation2": {
-        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv",
-        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv",
-        "Data_name": "rotation2",
-        "save_name": "rotation2shifted.csv",
-        "pose_start_time": 66,
-        "opti_start_time": 1744193157.0,
-        "duration_of_video": 910,
-    }
-}
 
 # Choose the dataset to run:
 selected = "rotation2"
