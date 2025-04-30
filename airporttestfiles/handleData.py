@@ -3,7 +3,9 @@ import numpy as np
 import csv
 import cv2
 
-with open("airporttestfiles/5markerrotation2.csv", "r") as opti_file:
+file_name = "5markervid2"
+
+with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
     header = next(reader)  # Skip the header row
     data = [row for row in reader]
@@ -11,7 +13,7 @@ with open("airporttestfiles/5markerrotation2.csv", "r") as opti_file:
 
 
 
-with open("airporttestfiles/5markerrotation2output.csv", 'w',newline='') as opti_output:
+with open(f"airporttestfiles/{file_name}"+"output.csv", 'w',newline='') as opti_output:
     writer = csv.writer(opti_output)
     for row in data:
         time = float(row[0])
@@ -29,7 +31,7 @@ with open("airporttestfiles/5markerrotation2output.csv", 'w',newline='') as opti
         #Skulle gerne konvertere til rotation matrix, sammenligne dem og konvertere til vektor igen
         R_board, _ = cv2.Rodrigues(board_rotation)
         R_phone, _ = cv2.Rodrigues(phone_rotation)
-        R_relative = R_board.T @ R_phone
+        R_relative = R_board.T @ R_phone.T
         relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
         r = relative_rotation_vector.flatten()
         writer.writerow([time, dx, dy, dz, r[0], r[1], r[2]])
