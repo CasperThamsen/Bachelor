@@ -9,7 +9,9 @@ ax.plot(val[:,0], val[:,3], '.m')
 ax.plot(val[:,0], val[:,4], '.r')
 ax.plot(val[:,0], val[:,5], '.b')
 ax.plot(val[:,0], val[:,6], '.g')
+plt.savefig(r"C:\Users\caspe\Workspace\Bachelor\datapictures\5markerrotation2.png")
 plt.show()
+
 
 
 

@@ -1,28 +1,43 @@
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+import icecream as ic
 import csv
 
 
+datasets = {
+    "rotation1": {
+        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv",
+        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv",
+        "Data_name": "rotation1",
+        "save_name": "rotation1shifted.csv",
+        "pose_start_time": 65,
+        "opti_start_time": 1744193042.0,
+        "duration_of_video": 1450,
+    },
+    "rotation2": {
+        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv",
+        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv",
+        "Data_name": "rotation2",
+        "save_name": "rotation2shifted.csv",
+        "pose_start_time": 66,
+        "opti_start_time": 1744193157.0,
+        "duration_of_video": 910,
+    }
+}
 
-#Rotation1
-# rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv"
-# rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv"
-# Data_name = "rotation1"
-# save_name = "rotation1shifted.csv"
-# pose_start_time = 65
-# opti_start_time = 1744193042.0
-# duration_of_video = 1450
+# Choose the dataset to run:
+selected = "rotation2"
+cfg = datasets[selected]
 
-
-# #Rotation2
-rot1optiLoc = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv"
-rot1poseLoc = r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv"
-Data_name = "rotation2"
-save_name = "rotation2shifted.csv"
-opti_start_time = 1744193157.0
-pose_start_time = 66
-duration_of_video = 910
+# Then access like this:
+rot1optiLoc = cfg["rot1optiLoc"]
+rot1poseLoc = cfg["rot1poseLoc"]
+Data_name = cfg["Data_name"]
+save_name = cfg["save_name"]
+pose_start_time = cfg["pose_start_time"]
+opti_start_time = cfg["opti_start_time"]
+duration_of_video = cfg["duration_of_video"]
 
 
 
@@ -55,39 +70,56 @@ for shift in range(int(-60/hz), int(30/hz)):
 
 
     opti_shifted = opti_shifted[(opti_shifted[:,0] >= pose_start_time) & (opti_shifted[:,0] <= duration_of_video)]
-    opti_shifted = opti_shifted[opti_shifted[:,0].argsort()]
     common_frames = np.intersect1d(opti_shifted[:,0], rot1pose[:,0])
 
     pose_pos = []
     opti_pos = []
-    pose_R = []
-    opti_R = []
+    pose_rotations = []
+    opti_rotations = []
     for frame in common_frames:
-        pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:4]
-        opti_tvec= opti_shifted[opti_shifted[:,0] == frame, 1:4]
+        pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:7]
+        opti_tvec= opti_shifted[opti_shifted[:,0] == frame, 1:7]
         opti_tvec_duplicate = np.repeat(opti_tvec, len(pose_tvec), axis=0)
-        pose_pos.append(pose_tvec)
-        opti_pos.append(opti_tvec_duplicate)
-        pose_rvec = rot1pose[rot1pose[:,0] == frame, 4:7]
-        opti_rvec = opti_shifted[opti_shifted[:,0] == frame, 4:7]
-        opti_rvec_duplicate = np.repeat(opti_rvec, len(pose_rvec), axis=0)
-        pose_R.append(pose_rvec)
-        opti_R.append(opti_rvec_duplicate)
+        pose_pos.append(pose_tvec[:,0:3])
+        opti_pos.append(opti_tvec_duplicate[:,0:3])
+        pose_rot = pose_tvec[:,3:6]
+        opti_rot = opti_tvec_duplicate[:,3:6]
+        for i in range(len(pose_rot)):
+                R_pose, _ = cv2.Rodrigues(pose_rot[i])
+                R_opti, _ = cv2.Rodrigues(opti_rot[i])
+
+                pose_rotations.append(R_pose)
+                opti_rotations.append(R_opti)
     pose_pos = np.vstack(pose_pos)
     opti_pos = np.vstack(opti_pos)
-    pose_R = np.vstack(pose_R)
-    opti_R = np.vstack(opti_R)
+
+
+    angular_differences = []
+    for R_pose, R_opti in zip(pose_rotations, opti_rotations):
+        R_relative = R_pose.T @ R_opti
+        relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
+        angular_difference = np.linalg.norm(relative_rotation_vector)
+        angular_differences.append(angular_difference)
+    mean_angular_difference = np.mean(angular_differences)
+
+
+
+
+
 
     pose_filtered = rot1pose[rot1pose[:,0] >= pose_start_time]
     #RMS error
     RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
-    if RMSE < best_error:
-        best_error = RMSE
+    combined_error = RMSE + mean_angular_difference
+    if combined_error < best_error:
+        best_error = combined_error
         best_shift = shift
         best_opti_shifted = opti_shifted.copy()
         opti_shifted = np.unique(opti_shifted,axis=0)
         np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
         np.savetxt(save_name, pose_filtered, delimiter=",", fmt='%.7f')
+        print(f"Best shift: {best_shift}, Error: {best_error}, Shifted start time: {shifted_opti_start_time}")
+        
 
 
 new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]

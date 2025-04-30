@@ -24,11 +24,12 @@ with open("airporttestfiles/5markerrotation2output.csv", 'w',newline='') as opti
 
         rx1,ry1,rz1 = map(float, row[4:7])
         rx2,ry2,rz2 = map(float, row[10:13])
-        board_rotation = np.array([rx1, rz1,ry1])
-        phone_rotation = np.array([rx2, rz2,ry2 ])
+        board_rotation = np.array([rx2, rz2,ry2])
+        phone_rotation = np.array([rx1, rz1,ry1 ])
+        #Skulle gerne konvertere til rotation matrix, sammenligne dem og konvertere til vektor igen
         R_board, _ = cv2.Rodrigues(board_rotation)
         R_phone, _ = cv2.Rodrigues(phone_rotation)
-        R_relative = np.dot(R_phone, R_board.T)
+        R_relative = R_board.T @ R_phone
         relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
         r = relative_rotation_vector.flatten()
         writer.writerow([time, dx, dy, dz, r[0], r[1], r[2]])
