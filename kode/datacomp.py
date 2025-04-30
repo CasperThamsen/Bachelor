@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import cv2
 import numpy as np
 import csv
 
@@ -32,7 +33,7 @@ best_shift = None
 best_opti_shifted = None
 best_error = float('inf')
 
-for shift in range(int(-30/hz), int(30/hz)):
+for shift in range(int(-60/hz), int(30/hz)):
     shifted_opti_start_time = opti_start_time + shift * hz
     opti_shifted = rot1opti.copy()
     index = pose_start_time
@@ -59,14 +60,24 @@ for shift in range(int(-30/hz), int(30/hz)):
 
     pose_pos = []
     opti_pos = []
+    pose_R = []
+    opti_R = []
     for frame in common_frames:
-        pose_rows = rot1pose[rot1pose[:,0] == frame, 1:4]
-        opti_rows= opti_shifted[opti_shifted[:,0] == frame, 1:4]
-        opti_duplicate = np.repeat(opti_rows, len(pose_rows), axis=0)
-        pose_pos.append(pose_rows)
-        opti_pos.append(opti_duplicate)
+        pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:4]
+        opti_tvec= opti_shifted[opti_shifted[:,0] == frame, 1:4]
+        opti_tvec_duplicate = np.repeat(opti_tvec, len(pose_tvec), axis=0)
+        pose_pos.append(pose_tvec)
+        opti_pos.append(opti_tvec_duplicate)
+        pose_rvec = rot1pose[rot1pose[:,0] == frame, 4:7]
+        opti_rvec = opti_shifted[opti_shifted[:,0] == frame, 4:7]
+        opti_rvec_duplicate = np.repeat(opti_rvec, len(pose_rvec), axis=0)
+        pose_R.append(pose_rvec)
+        opti_R.append(opti_rvec_duplicate)
     pose_pos = np.vstack(pose_pos)
     opti_pos = np.vstack(opti_pos)
+    pose_R = np.vstack(pose_R)
+    opti_R = np.vstack(opti_R)
+
     pose_filtered = rot1pose[rot1pose[:,0] >= pose_start_time]
     #RMS error
     RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
@@ -77,11 +88,6 @@ for shift in range(int(-30/hz), int(30/hz)):
         opti_shifted = np.unique(opti_shifted,axis=0)
         np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
         np.savetxt(save_name, pose_filtered, delimiter=",", fmt='%.7f')
-        print(f"Best shift {best_shift*hz}, RMSE: {RMSE}, shift: {shift}")
-        print(total_time_missing)
-
-# print(f"Best shift: {best_shift*hz}")
-# print(f"Best RMSE: {best_error}")
 
 
 new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]
