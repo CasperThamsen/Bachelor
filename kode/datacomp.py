@@ -28,7 +28,7 @@ best_shift = None
 best_opti_shifted = None
 best_error = float('inf')
 
-for shift in range(int(-60/hz), int(30/hz)):
+for shift in range(int(-30/hz), int(30/hz)):
     shifted_opti_start_time = opti_start_time + shift * hz
     opti_shifted = rot1opti.copy()
     index = pose_start_time
