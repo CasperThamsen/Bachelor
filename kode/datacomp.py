@@ -10,7 +10,6 @@ from dataset_configs import datasets
 selected = "rotation2"
 cfg = datasets[selected]
 
-# Then access like this:
 rot1optiLoc = cfg["rot1optiLoc"]
 rot1poseLoc = cfg["rot1poseLoc"]
 Data_name = cfg["Data_name"]
@@ -81,9 +80,6 @@ for shift in range(int(-30/hz), int(30/hz)):
         angular_difference = np.linalg.norm(relative_rotation_vector)
         angular_differences.append(angular_difference)
     mean_angular_difference = np.mean(angular_differences)
-
-
-
 
 
 

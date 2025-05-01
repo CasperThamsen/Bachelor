@@ -126,7 +126,7 @@ def main():
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
         with open(csv_file_name, "a",  newline="") as csvfile:
             writer = csv.writer(csvfile)
-            for i, tvec in enumerate(tvecs):
+            for i, (tvec, rvec) in enumerate(zip(tvecs, rvecs)):
                 if i < len(marker_corners_n):
                     marker_type = closest_aruco_ids[i] + 10
                 else:

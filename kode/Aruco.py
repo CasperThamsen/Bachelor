@@ -2,17 +2,18 @@ import cv2
 import icecream as ic
 import cv2.aruco as aruco
 import numpy as np
+import csv
 
 def main():
     detector_params = aruco.DetectorParameters()
-    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
+    dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
-    calibration_data = np.load('calibration_data.npz')
+    calibration_data = np.load('phone_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
 
     
-    marker_length = 0.094
+    marker_length = 0.15
     obj_points = np.array([
         [-marker_length / 2, marker_length / 2, 0],  # Top-left corner
         [marker_length / 2, marker_length / 2, 0],   # Top-right corner
@@ -20,10 +21,15 @@ def main():
         [-marker_length / 2, -marker_length / 2, 0]  # Bottom-left corner
     ], dtype=np.float32)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('5markerrotation2.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
+
+    out = cv2.VideoWriter('arucoposetest.mp4', 
+                    cv2.VideoWriter_fourcc(*'XVID'), 
+                    30.0, 
+                    frame_size)
     
     while cap.isOpened():
         ret, img = cap.read()
@@ -60,7 +66,14 @@ def main():
                     # Display the translation vector (tvec) on the image
                     cv2.putText(img, f"tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
+
+            frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            with open("aruco_test.csv", "a",  newline="") as csvfile:
+                writer = csv.writer(csvfile)
+                for i, (tvec, rvec) in enumerate(zip(tvecs, rvecs)):
+                    writer.writerow([frame_number,tvec[0][0],tvec[1][0],tvec[2][0],rvec[0][0],rvec[1][0],rvec[2][0], marker_ids[i][0]])
         cv2.imshow("Detected Markers", img)
+        out.write(img)
         if cv2.waitKey(1) == ord('q'):
             break
     cap.release()
