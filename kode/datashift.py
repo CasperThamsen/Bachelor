@@ -19,6 +19,8 @@ save_name = cfg["save_name"]
 pose_start_time = cfg["pose_start_time"]
 opti_start_time = cfg["opti_start_time"]
 duration_of_video = cfg["duration_of_video"]
+save_location = r"csvfiles\\"
+save = save_location + save_name
 
 
 
@@ -95,8 +97,8 @@ for shift in range(int(-30/hz), int(30/hz)):
         best_opti_shifted = opti_shifted.copy()
         opti_shifted = np.unique(opti_shifted,axis=0)
         #save best shifted data
-        np.savetxt(save_name, pose_filtered, delimiter=",", fmt='%.7f')
-        np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
+        np.savetxt(save.replace(".csv", "pose.csv"), pose_filtered, delimiter=",", fmt='%.7f')
+        np.savetxt(save.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
         print(f"Best shift: {best_shift}, Error: {best_error}, Shifted start time: {shifted_opti_start_time}")
         #find homogenous transformation matrix to align coordinate systems
         best_rvec = np.mean(pose_rot, axis=0)  # Replace with the actual best rvec
@@ -112,6 +114,6 @@ for shift in range(int(-30/hz), int(30/hz)):
 
 
 new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]
-with open("best_shifts.csv", "a", newline="") as f:
+with open(save_location + "best_shifts.csv", "a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(new_data)
