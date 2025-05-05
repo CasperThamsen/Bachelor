@@ -5,6 +5,8 @@ import icecream as ic
 import csv
 from dataset_configs import datasets
 
+""" This script is used to find the best shift for the opti data to match the pose data.
+    It will iterate through a range of shifts and calculate the error between the shifted opti data and the pose data."""
 
 # Choose the dataset to run:
 selected = "rotation2"
@@ -75,7 +77,7 @@ for shift in range(int(-30/hz), int(30/hz)):
 
     angular_differences = []
     for R_pose, R_opti in zip(pose_rotations, opti_rotations):
-        R_relative = R_pose.T @ R_opti
+        R_relative = R_opti.T @ R_pose
         relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
         angular_difference = np.linalg.norm(relative_rotation_vector)
         angular_differences.append(angular_difference)
@@ -87,14 +89,25 @@ for shift in range(int(-30/hz), int(30/hz)):
     #RMS error
     RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
     combined_error = RMSE + mean_angular_difference
-    if combined_error < best_error:
-        best_error = combined_error
+    if RMSE < best_error:
+        best_error = RMSE
         best_shift = shift
         best_opti_shifted = opti_shifted.copy()
         opti_shifted = np.unique(opti_shifted,axis=0)
-        np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
+        #save best shifted data
         np.savetxt(save_name, pose_filtered, delimiter=",", fmt='%.7f')
+        np.savetxt(save_name.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
         print(f"Best shift: {best_shift}, Error: {best_error}, Shifted start time: {shifted_opti_start_time}")
+        #find homogenous transformation matrix to align coordinate systems
+        best_rvec = np.mean(pose_rot, axis=0)  # Replace with the actual best rvec
+        best_tvec = np.mean(pose_pos - opti_pos, axis=0)  # Translation difference between systems
+
+        R,_, = cv2.Rodrigues(best_rvec)
+        T = np.eye(4)
+        T[:3, :3] = R
+        T[:3, 3] = best_tvec
+        print("Homogeneous transformation matrix:")
+        print(T)
         
 
 
