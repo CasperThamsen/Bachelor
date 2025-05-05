@@ -26,12 +26,12 @@ def main():
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
 
-    out = cv2.VideoWriter('arucoposetest.mp4', 
+    out = cv2.VideoWriter(r"videos\processed\arucoposetest.mp4", 
                     cv2.VideoWriter_fourcc(*'XVID'), 
                     30.0, 
                     frame_size)
     
-    with open("aruco_test.csv", "w", newline="") as csvfile:
+    with open(r"csvfiles\aruco_test.csv", "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
     
     frame_number = 0

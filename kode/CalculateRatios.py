@@ -51,7 +51,7 @@ def angle_between_vectors(v1, v2):
 
 def main():
     #PICTURE PATH HERE
-    img = cv2.imread('lufthavn.png')
+    img = cv2.imread(r"ratio_pictures\lufthavn.png")
     #PICTURE PATH HERE
 
 
