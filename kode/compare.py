@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-file_name1 = r"C:\Users\Thamsn\wBachelor\Bachelor\airporttestfiles\5markerrotation2output.csv"
+file_name1 = r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2.csv"
 val1 = np.loadtxt(file_name1, delimiter=',')
-file_name2 = r"C:\Users\Thamsn\wBachelor\Bachelor\aruco_test.csv"
+file_name2 = r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv"
 val2 = np.loadtxt(file_name2, delimiter=',')
 
 val2_del = val2[val2[:,7] == 0]

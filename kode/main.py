@@ -28,12 +28,13 @@ def main():
     detector = aruco.ArucoDetector(dictionary, detector_params)
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    csv_file_name = '5markerrotation2pose.csv'
-    cap = cv2.VideoCapture('5markerrotation2.mp4')
+    save_name = '5markerrotation2'
+    csv_file_name = save_name+'pose.csv'
+    cap = cv2.VideoCapture(save_name+'.mp4')
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
-    out = cv2.VideoWriter('5markerrotation2pose.mp4', 
+    out = cv2.VideoWriter(save_name+'pose.mp4', 
                         cv2.VideoWriter_fourcc(*'XVID'), 
                         30.0, 
                         frame_size)

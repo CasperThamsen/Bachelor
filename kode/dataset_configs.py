@@ -1,7 +1,7 @@
 datasets = {
     "rotation1": {
-        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotationoutput.csv",
-        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotationpose.csv",
+        "rot1optiLoc": r"airporttestfiles\5markerrotationoutput.csv",
+        "rot1poseLoc": '5markerrotationpose.csv',
         "Data_name": "rotation1",
         "save_name": "rotation1shifted.csv",
         "pose_start_time": 65,
@@ -9,8 +9,8 @@ datasets = {
         "duration_of_video": 1450,
     },
     "rotation2": {
-        "rot1optiLoc": r"C:\Users\caspe\Workspace\Bachelor\airporttestfiles\5markerrotation2output.csv",
-        "rot1poseLoc": r"C:\Users\caspe\Workspace\Bachelor\5markerrotation2pose.csv",
+        "rot1optiLoc": r"airporttestfiles\5markerrotation2output.csv",
+        "rot1poseLoc": '5markerrotation2pose.csv',
         "Data_name": "rotation2",
         "save_name": "rotation2shifted.csv",
         "pose_start_time": 66,

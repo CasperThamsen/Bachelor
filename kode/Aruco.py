@@ -8,12 +8,12 @@ def main():
     detector_params = aruco.DetectorParameters()
     dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
-    calibration_data = np.load('phone_calibration.npz')
+    calibration_data = np.load('webcam_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
 
     
-    marker_length = 0.15
+    marker_length = 0.154
     obj_points = np.array([
         [-marker_length / 2, marker_length / 2, 0],  # Top-left corner
         [marker_length / 2, marker_length / 2, 0],   # Top-right corner
@@ -21,7 +21,7 @@ def main():
         [-marker_length / 2, -marker_length / 2, 0]  # Bottom-left corner
     ], dtype=np.float32)
 
-    cap = cv2.VideoCapture('5markerrotation2.mp4')
+    cap = cv2.VideoCapture(0)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
@@ -31,6 +31,10 @@ def main():
                     30.0, 
                     frame_size)
     
+    with open("aruco_test.csv", "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+    
+    frame_number = 0
     while cap.isOpened():
         ret, img = cap.read()
         if not ret:
@@ -39,7 +43,6 @@ def main():
 
 
         marker_corners, marker_ids, rejected_candidates = detector.detectMarkers(img)
-
         # Draw detected markers on the image
         if marker_ids is not None:
             aruco.drawDetectedMarkers(img, marker_corners, marker_ids)
@@ -66,8 +69,8 @@ def main():
                     # Display the translation vector (tvec) on the image
                     cv2.putText(img, f"tvec: {tvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
-
-            frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            # frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            frame_number +=1
             with open("aruco_test.csv", "a",  newline="") as csvfile:
                 writer = csv.writer(csvfile)
                 for i, (tvec, rvec) in enumerate(zip(tvecs, rvecs)):
