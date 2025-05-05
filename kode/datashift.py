@@ -100,17 +100,34 @@ for shift in range(int(-30/hz), int(30/hz)):
         np.savetxt(save.replace(".csv", "pose.csv"), pose_filtered, delimiter=",", fmt='%.7f')
         np.savetxt(save.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f')
         print(f"Best shift: {best_shift}, Error: {best_error}, Shifted start time: {shifted_opti_start_time}")
-        #find homogenous transformation matrix to align coordinate systems
-        best_rvec = np.mean(pose_rot, axis=0)  # Replace with the actual best rvec
-        best_tvec = np.mean(pose_pos - opti_pos, axis=0)  # Translation difference between systems
-
+        # find homogenous transformation matrix to align coordinate systems
+        #taking mean on rvec is not valid. Fix. (enten brug fra bedste fitting pose, eller brug anden metode)
+        best_rvec = np.mean(pose_rot, axis=0)  # gennemsnit af pose rotation for nu... (FORKERT METODE)
+        best_tvec = np.mean(pose_pos - opti_pos, axis=0) 
         R,_, = cv2.Rodrigues(best_rvec)
         T = np.eye(4)
         T[:3, :3] = R
         T[:3, 3] = best_tvec
         print("Homogeneous transformation matrix:")
         print(T)
-        
+
+#doesnt work yet, should be made as a new file to avoid having to find best shift every time?
+#note to self, best shifted dataset is saved in "name"shiftedpose/opti.csv
+#Fix variable names to be more descriptive, should be pose transformed into opti
+#OptiPose≈T⋅Pose
+transformed_data = []
+for pos, pose_r in zip(pose_pos,pose_rotations):
+    R_cur, _ = cv2.Rodrigues(pose_r)
+    T_cur = np.eye(4)
+    T_cur[:3, :3] = R_cur
+    T_cur[:3, 3] = pos
+    T_new = T @ T_cur
+    rvec_new, _ = cv2.Rodrigues(T_new[:3, :3])
+    tvec_new = T_new[:3, 3]
+    pose_in_opti = np.hstack((tvec_new, rvec_new.flatten()))
+    transformed_data.append(pose_in_opti)
+np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
+
 
 
 new_data = [best_shift * hz, best_error, opti_start_time + best_shift*hz, Data_name]
