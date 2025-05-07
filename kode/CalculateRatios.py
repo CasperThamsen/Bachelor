@@ -57,8 +57,8 @@ def main():
 
 
     mt = MarkerTracker.MarkerTracker(order=4,  # number of shaded regions
-                                      kernel_size=30,
-                                      scale_factor=100)
+                                      kernel_size=20,
+                                      scale_factor=1)
     mt.track_marker_with_missing_black_leg = False
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
@@ -74,15 +74,16 @@ def main():
 
     img_pairs_copy = img.copy()
     for i, pose in enumerate(poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x+20), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x+20), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 0), 2)
     for i, pose in enumerate(sorted_poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x-20), int(pose.y-20)), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0, 255), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x-20), int(pose.y-20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0,0, 255), 2)
     for i, pose in enumerate(desired_order):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 5, (255, 0, 0), 2)
     cv2.putText(img_pairs_copy, "Green: detected order", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     cv2.putText(img_pairs_copy, "Red: sorted order", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     cv2.putText(img_pairs_copy, "Blue: desired order", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
     cv2.namedWindow("Sorted Markers", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("Sorted Markers", 1280, 720)
     cv2.imshow("Sorted Markers", img_pairs_copy)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
