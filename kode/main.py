@@ -7,14 +7,14 @@ import csv
 
 def main():
     # Load calibration data
-    calibration_data = np.load('phone_calibration.npz')
+    calibration_data = np.load('webcam_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
     validation_ratios = np.load('validation_ratios.npz')
     ratios = validation_ratios['ratios']
 
     #pose related variables
-    marker_length = 0.15
+    marker_length = 0.154
     obj_points = np.array([
         [-marker_length / 2, marker_length / 2, 0],  # Top-left corner
         [marker_length / 2, marker_length / 2, 0],   # Top-right corner
@@ -24,13 +24,16 @@ def main():
 
     #Aruco
     detector_params = aruco.DetectorParameters()
+    detector_params.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
+    
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = '1marker'
+    save_name = 'experiment_006'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
-    cap = cv2.VideoCapture(r"airporttestfiles\\" + save_name + ".mp4")
+    # cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
+    cap = cv2.VideoCapture(1)
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
@@ -85,6 +88,7 @@ def main():
         if marker_pairs is not None or marker_ids is not None:
             rvecs = []            
             tvecs = []
+            tvec2 = [] 
             text_offset = 0
             aruco.drawDetectedMarkers(img_copy, marker_corners_n)
             aruco.drawDetectedMarkers(img_copy, marker_corners_aruco, marker_ids)
@@ -96,13 +100,6 @@ def main():
                     rvecs.append(rvec)
                     tvecs.append(tvec)
                     # Draw axis for each detected marker
-                    axis_length = marker_length / 2
-                    axis_points = np.array([ 
-                        [axis_length, 0, 0],    # X-axis
-                        [0, axis_length, 0],    # Y-axis
-                        [0, 0, axis_length]     # Z-axis
-                    ], dtype=np.float32)
-
                     cv2.drawFrameAxes(img_copy, mtx, dist, rvec, tvec, marker_length*1.5,2)
 
                     # Display the translation vector (tvec) on the image
@@ -110,7 +107,9 @@ def main():
                         marker_type = "n-fold"
                     else:
                         marker_type = "Aruco"
-                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec.flatten()}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                    R, _ = cv2.Rodrigues(rvec)
+                    tvec2.append(-R.T @ tvec)
+                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec2}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
         closest_aruco_ids = []  # Store closest ArUco IDs for each n-fold marker
@@ -129,10 +128,13 @@ def main():
             writer = csv.writer(csvfile)
             for i, (tvec, rvec) in enumerate(zip(tvecs, rvecs)):
                 if i < len(marker_corners_n):
-                    marker_type = closest_aruco_ids[i] + 10
-                else:
+                    try:
+                        marker_type = closest_aruco_ids[i] + 10
+                    except :
+                        pass
+                else:   
                     marker_type = marker_ids[i-len(marker_corners_n)]
-                writer.writerow([frame_number,tvec[0][0],tvec[1][0],tvec[2][0],rvec[0][0],rvec[1][0],rvec[2][0], int(marker_type)])
+                writer.writerow([frame_number,*tvec.flatten(),*rvec.flatten(), int(marker_type)])
 
           
         out.write(img_copy)

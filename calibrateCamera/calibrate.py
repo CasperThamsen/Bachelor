@@ -43,7 +43,7 @@ for fname in images:
         img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
     #resize
 
-    resized_img = cv2.resize(img,(1920,1080))
+    resized_img = cv2.resize(img,(1366,768))
     cv2.imshow('img',resized_img)
     cv2.waitKey(0)
  
