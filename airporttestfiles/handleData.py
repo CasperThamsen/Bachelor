@@ -3,6 +3,11 @@ import numpy as np
 import csv
 import cv2
 
+#this file is for handling experiment files which are all from the first visit to the airport
+#They are formatted differently from the second visit.
+#time(unix),X,Y,Z,X,Y,Z,X,Y,Z,X,Y,Z
+
+
 file_name = "5markervid2"
 
 with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:

@@ -9,7 +9,9 @@ from dataset_configs import datasets
     It will iterate through a range of shifts and calculate the error between the shifted opti data and the pose data."""
 
 # Choose the dataset to run:
-selected = "rotation2"
+# "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
+# "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
+selected = "experiment_001"  
 cfg = datasets[selected]
 
 rot1optiLoc = cfg["rot1optiLoc"]
@@ -19,6 +21,7 @@ save_name = cfg["save_name"]
 pose_start_time = cfg["pose_start_time"]
 opti_start_time = cfg["opti_start_time"]
 duration_of_video = cfg["duration_of_video"]
+hz = cfg["hz"]
 save_location = r"csvfiles\\"
 save = save_location + save_name
 
@@ -26,7 +29,6 @@ save = save_location + save_name
 
 rot1opti = np.loadtxt(rot1optiLoc, delimiter=',')
 rot1pose = np.loadtxt(rot1poseLoc, delimiter=',')
-hz = 30/100
 best_shift = None
 best_opti_shifted = None
 best_error = float('inf')
