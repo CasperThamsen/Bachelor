@@ -7,7 +7,7 @@ import csv
 
 def main():
     # Load calibration data
-    calibration_data = np.load('webcam_calibration.npz')
+    calibration_data = np.load('phone_calibration.npz')
     mtx = calibration_data['mtx']
     dist = calibration_data['dist']
     validation_ratios = np.load('validation_ratios.npz')
@@ -30,10 +30,9 @@ def main():
     
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = 'experiment_006'
+    save_name = 'experiment_005'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
-    # cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
     frame_width = int(cap.get(3))
     frame_height = int(cap.get(4))
     frame_size = (frame_width, frame_height)
@@ -88,7 +87,7 @@ def main():
         if marker_pairs is not None or marker_ids is not None:
             rvecs = []            
             tvecs = []
-            tvec2 = [] 
+            tvec_marker_frame = [] 
             text_offset = 0
             aruco.drawDetectedMarkers(img_copy, marker_corners_n)
             aruco.drawDetectedMarkers(img_copy, marker_corners_aruco, marker_ids)
@@ -99,6 +98,10 @@ def main():
                 if success:
                     rvecs.append(rvec)
                     tvecs.append(tvec)
+                    #transform the translation vector to the marker coordinate system
+                    R, _ = cv2.Rodrigues(rvec)
+                    cam_in_mkr = -R.T @ tvec
+                    tvec_marker_frame.append(cam_in_mkr)
                     # Draw axis for each detected marker
                     cv2.drawFrameAxes(img_copy, mtx, dist, rvec, tvec, marker_length*1.5,2)
 
@@ -107,9 +110,8 @@ def main():
                         marker_type = "n-fold"
                     else:
                         marker_type = "Aruco"
-                    R, _ = cv2.Rodrigues(rvec)
-                    tvec2.append(-R.T @ tvec)
-                    cv2.putText(img_copy, f"{marker_type} tvec: {tvec2}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+                    cv2.putText(img_copy, f"{marker_type} tvec: {cam_in_mkr}, rvec: {rvec.flatten()}", (10, 30 + text_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
                     text_offset += 20
         #Write csv file
         closest_aruco_ids = []  # Store closest ArUco IDs for each n-fold marker
@@ -126,7 +128,7 @@ def main():
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
         with open(csv_file_name, "a",  newline="") as csvfile:
             writer = csv.writer(csvfile)
-            for i, (tvec, rvec) in enumerate(zip(tvecs, rvecs)):
+            for i, (tvec, rvec) in enumerate(zip(tvec_marker_frame, rvecs)):
                 if i < len(marker_corners_n):
                     try:
                         marker_type = closest_aruco_ids[i] + 10
