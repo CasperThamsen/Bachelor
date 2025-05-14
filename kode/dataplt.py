@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-file_name = r"csvfiles\experiment_002pose.csv"
+file_name = r"csvfiles\experiment_005pose.csv"
 val_raw = np.loadtxt(file_name, delimiter=',')
 fig, ax = plt.subplots()
 val = val_raw[val_raw[:,7] == 0]
