@@ -75,7 +75,6 @@ for frameset in range(int(1)):
                 if index > duration_of_video:
                     break
             else:
-                # data_dropped += 1 #check if else statement works
                 opti_shifted[i][0] = np.inf #set data before start time to inf to remove in line 76
         # print(f"Data dropped: {data_dropped}")
 
@@ -95,12 +94,7 @@ for frameset in range(int(1)):
             ids = rot1pose[rot1pose[:,0] == frame, 7]
             pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:7]
             opti_tvec = opti_shifted[opti_shifted[:,0] == frame, 1:7]
-            # if len(opti_tvec) > 1: #debugging
-            #     print(opti_tvec)
             opti_tvec_duplicate = np.repeat(opti_tvec, len(pose_tvec), axis=0)
-            # if len(pose_tvec) != len(opti_tvec_duplicate): #debugging
-            #     print(f"Skipping frame {frame} due to mismatched data: pose_tvec={len(pose_tvec)}, opti_tvec={len(opti_tvec)}")
-            #     continue
             pose_pos.append(pose_tvec[:,0:3])
             opti_pos.append(opti_tvec_duplicate[:,0:3])
             id_list.extend(ids)
