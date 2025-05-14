@@ -57,14 +57,13 @@ num_frames = int(len(rot1opti)/8)
 intscale = int(scale)
 
 
-for frameset in range(1):
+for frameset in range(intscale):
     start_time = time.time()
     print(f"Processing frameset: {frameset}")
     opti_downsampled = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
     shift_start_time = time.time()
-    for shift in range(num_frames):
+    for shift in range(num_frames): #num_Frames
         shifted_opti_start_time = shift
-        print(f"Shift: {shift}")
         opti_shifted = opti_downsampled.copy()
         index = pose_start_time
         
@@ -101,19 +100,15 @@ for frameset in range(1):
         # opti_rotations = []
         #save common frames to a new file
         frame_start_time = time.time()
-        for frame in common_frames: 
-            time = rot1pose[rot1pose[:,0] == frame, 0]
-            ids = rot1pose[rot1pose[:,0] == frame, 7]
-            id_list.extend(ids)
-            frame_list.extend(time)
-
-            pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:7]
-            opti_tvec = opti_shifted[opti_shifted[:,0] == frame, 1:7]
-            opti_tvec_duplicate = np.repeat(opti_tvec, len(pose_tvec), axis=0)
-
-            pose_pos.append(pose_tvec[:,0:3])
-            opti_pos.append(opti_tvec_duplicate[:,0:3])
-            pose_rotations.append(pose_tvec[:,3:6])
+        for frame in common_frames:           
+            pose_data = rot1pose[rot1pose[:,0] == frame, 0:8]
+            opti_data = opti_shifted[opti_shifted[:,0] == frame, 0:8]
+            opti_tvec_duplicate = np.repeat(opti_data, len(pose_data), axis=0)
+            frame_list.append(pose_data[:,0])
+            id_list.append(pose_data[:,7])
+            pose_pos.append(pose_data[:,1:4])
+            opti_pos.append(opti_tvec_duplicate[:,1:4])
+            pose_rotations.append(pose_data[:,4:7])
             # pose_rot = pose_tvec[:,3:6]
             # opti_rot = opti_tvec_duplicate[:,3:6]
             # for i in range(len(pose_rot)):
@@ -127,6 +122,8 @@ for frameset in range(1):
         pose_pos = np.vstack(pose_pos)
         opti_pos = np.vstack(opti_pos)
         pose_rotations = np.vstack(pose_rotations)
+        frame_list = np.concatenate(frame_list)
+        id_list = np.concatenate(id_list)
         
 
 
@@ -167,7 +164,7 @@ for frameset in range(1):
         end_time = time.time()
     print(f"Time taken for shift: {shift_end_time - shift_start_time} seconds")
     print(f"Time taken for frame: {frame_end_time - frame_start_time} seconds")
-    print(f"Time taken for all shifts: {end_time - start_time} seconds")
+    
             
 
     #doesnt work yet, should be made as a new file to avoid having to find best shift every time?
@@ -194,4 +191,5 @@ for pos,t,id,rot in zip(best_pose_pos,best_frames,best_ids,best_rotation):
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
 
 np.savetxt(save.replace(".csv", "opti.csv"), best_opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
+print(f"Time taken for all shifts: {end_time - start_time} seconds")
 print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
