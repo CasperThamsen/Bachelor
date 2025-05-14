@@ -12,7 +12,7 @@ import time
 # Choose the dataset to run:
 # "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
 # "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
-selected = "experiment_001"  
+selected = "experiment_006"  
 cfg = datasets[selected]
 
 rot1optiLoc = cfg["rot1optiLoc"]
@@ -52,10 +52,10 @@ fps = 30 # phone fps
 scale = hz / fps
 num_frames = int(len(rot1opti)/8)
 intscale = int(scale)
+start_time = time.time()
 
 
-for frameset in range(intscale):
-    start_time = time.time()
+for frameset in range(intscale): 
     print(f"Processing frameset: {frameset}")
     opti_downsampled = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
     shift_start_time = time.time()
@@ -172,7 +172,7 @@ for frameset in range(intscale):
 
 
 
-new_data = [best_shift * scale, best_error, best_shift, Data_name]
+new_data = [best_shift * scale, best_error, best_shift,best_frameset ,Data_name]
 with open(save_location + "best_shifts.csv", "a", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(new_data)
@@ -188,5 +188,5 @@ for pos,t,id,rot in zip(best_pose_pos,best_frames,best_ids,best_rotation):
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
 
 np.savetxt(save.replace(".csv", "opti.csv"), best_opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
-print(f"Time taken for all shifts: {end_time - start_time} seconds")
 print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
+print(f"Time taken for all shifts: {end_time - start_time} seconds")
