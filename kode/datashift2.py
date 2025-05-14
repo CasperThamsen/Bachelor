@@ -175,10 +175,10 @@ for frameset in range(intscale):
 
 
 
-    new_data = [best_shift * scale, best_error, best_shift, Data_name]
-    with open(save_location + "best_shifts.csv", "a", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(new_data)
+new_data = [best_shift * scale, best_error, best_shift, Data_name]
+with open(save_location + "best_shifts.csv", "a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow(new_data)
 
     
 
