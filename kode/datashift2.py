@@ -36,6 +36,10 @@ best_shift = None
 best_opti_shifted = None
 best_error = float('inf')
 best_frameset = None
+best_tvec = None
+best_pose_pos = None
+best_frames = None
+best_ids = None
 fps = 30 # phone fps
 
 #2 methods are possible due to the framerate missmatch
@@ -46,7 +50,7 @@ fps = 30 # phone fps
 # currently takes every 8th element, maybe shift the "scale" by +1 for every possibility to match 8 frames per 1 frame
 
 scale = hz/fps
-for frameset in range(int(scale)):
+for frameset in range(int(1)):
     print(f"Processing frameset: {frameset}")
     for shift in range(int(1000)):
         shifted_opti_start_time = shift
@@ -81,10 +85,14 @@ for frameset in range(int(scale)):
         # commented rotation out for now.
         pose_pos = []
         opti_pos = []
+        id_list = []
+        frame_list = []
         # pose_rotations = []
         # opti_rotations = []
         #save common frames to a new file
         for frame in common_frames: 
+            time = rot1pose[rot1pose[:,0] == frame, 0]
+            ids = rot1pose[rot1pose[:,0] == frame, 7]
             pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:7]
             opti_tvec = opti_shifted[opti_shifted[:,0] == frame, 1:7]
             # if len(opti_tvec) > 1: #debugging
@@ -95,7 +103,8 @@ for frameset in range(int(scale)):
             #     continue
             pose_pos.append(pose_tvec[:,0:3])
             opti_pos.append(opti_tvec_duplicate[:,0:3])
-            
+            id_list.extend(ids)
+            frame_list.extend(time)
             # pose_rot = pose_tvec[:,3:6]
             # opti_rot = opti_tvec_duplicate[:,3:6]
             # for i in range(len(pose_rot)):
@@ -132,13 +141,16 @@ for frameset in range(int(scale)):
             #save best shifted data
             np.savetxt(save.replace(".csv", "pose.csv"), pose_filtered, delimiter=",", fmt='%.7f')
             np.savetxt(save.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
-            print(f"Best shift: {best_shift}, Error: {best_error}, Shifted start time: {shifted_opti_start_time}, Best frame selector: {best_frameset}")
+            print(f"Best shift: {best_shift}, Error: {best_error}, Best frameset: {best_frameset}")
             # find homogenous transformation matrix to align coordinate systems
             #taking mean on rvec is not valid. Fix. (enten brug fra bedste fitting pose, eller brug anden metode)
             # best_rvec = np.mean(pose_rot, axis=0)  # gennemsnit af pose rotation for nu... (FORKERT METODE)
+            best_ids = id_list
+            best_frames = frame_list
+            best_pose_pos = pose_pos
             best_tvec = np.mean(pose_pos - opti_pos, axis=0) 
             # R,_, = cv2.Rodrigues(best_rvec)
-            # T = np.eye(4)
+            # T = np.eye(3)
             # T[:3, :3] = R
             # T[:3, 3] = best_tvec
             # print("Homogeneous transformation matrix:")
@@ -148,18 +160,7 @@ for frameset in range(int(scale)):
     #note to self, best shifted dataset is saved in "name"shiftedpose/opti.csv
     #Fix variable names to be more descriptive, should be pose transformed into opti
     #OptiPose≈T⋅Pose
-    # transformed_data = []
-    # for pos, pose_r in zip(pose_pos,pose_rotations):
-    #     R_cur, _ = cv2.Rodrigues(pose_r)
-    #     T_cur = np.eye(4)
-    #     T_cur[:3, :3] = R_cur
-    #     T_cur[:3, 3] = pos
-    #     T_new = T @ T_cur
-    #     rvec_new, _ = cv2.Rodrigues(T_new[:3, :3])
-    #     tvec_new = T_new[:3, 3]
-    #     pose_in_opti = np.hstack((tvec_new, rvec_new.flatten()))
-    #     transformed_data.append(pose_in_opti)
-    # np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
+   
 
 
 
@@ -167,4 +168,14 @@ for frameset in range(int(scale)):
     with open(save_location + "best_shifts.csv", "a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(new_data)
+
+
+#should transform the pose data to the opti data for the best shift (NO ROTATION YET)
+transformed_data = []
+for pos,t,id in zip(best_pose_pos,best_frames,best_ids):
+    pose_in_opti = pos + best_tvec
+    appendable = (t,*pose_in_opti, id)
+    transformed_data.append(appendable)
+np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
+
 print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
