@@ -4,6 +4,7 @@ import numpy as np
 import icecream as ic
 import csv
 from dataset_configs import datasets
+import time
 
 """ This script is used to find the best shift for the opti data to match the pose data.
     It will iterate through a range of shifts and calculate the RMSE between the shifted opti data and the pose data.
@@ -51,15 +52,22 @@ fps = 30 # phone fps
 # currently takes every 8th element, maybe shift the "scale" by +1 for every possibility to match 8 frames per 1 frame
 
 #NO ROTATION AS NEW DATA IS IN EULER ANGLES AND POSE IS IN RODRIGUES
+scale = hz / fps
+num_frames = int(len(rot1opti)/8)
+intscale = int(scale)
 
-scale = hz/fps
-for frameset in range(int(scale)):
+
+for frameset in range(1):
+    start_time = time.time()
     print(f"Processing frameset: {frameset}")
-    for shift in range(0,1000,1):
+    opti_downsampled = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
+    shift_start_time = time.time()
+    for shift in range(num_frames):
         shifted_opti_start_time = shift
-        opti_shifted = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
+        print(f"Shift: {shift}")
+        opti_shifted = opti_downsampled.copy()
         index = pose_start_time
-        # data_dropped = 0
+        
         if index == 0:
             index = 1
         last_time = None
@@ -79,7 +87,7 @@ for frameset in range(int(scale)):
                     break
             else:
                 opti_shifted[i][0] = np.inf #set data before start time to inf to remove in next line (opti_shifted)
-        # print(f"Data dropped: {data_dropped}")
+        shift_end_time = time.time()
 
         opti_shifted = opti_shifted[(opti_shifted[:,0] >= pose_start_time) & (opti_shifted[:,0] <= duration_of_video)]
         common_frames = np.intersect1d(opti_shifted[:,0], rot1pose[:,0]) #Ensures both datasets have data in frame
@@ -92,6 +100,7 @@ for frameset in range(int(scale)):
         pose_rotations = []
         # opti_rotations = []
         #save common frames to a new file
+        frame_start_time = time.time()
         for frame in common_frames: 
             time = rot1pose[rot1pose[:,0] == frame, 0]
             ids = rot1pose[rot1pose[:,0] == frame, 7]
@@ -113,6 +122,7 @@ for frameset in range(int(scale)):
 
             
                     # opti_rotations.append(R_opti)
+        frame_end_time = time.time()
 
         pose_pos = np.vstack(pose_pos)
         opti_pos = np.vstack(opti_pos)
@@ -137,25 +147,28 @@ for frameset in range(int(scale)):
             best_error = RMSE
             best_shift = shift
             best_opti_shifted = opti_shifted.copy()
-            opti_shifted = np.unique(opti_shifted,axis=0)
             best_frameset = frameset
-            #save best shifted data
-            np.savetxt(save.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
-            print(f"Best shift: {best_shift}, Error: {best_error}, Best frameset: {best_frameset}")
-            # find homogenous transformation matrix to align coordinate systems
-            #taking mean on rvec is not valid. Fix. (enten brug fra bedste fitting pose, eller brug anden metode)
-            # best_rvec = np.mean(pose_rot, axis=0)  # gennemsnit af pose rotation for nu... (FORKERT METODE)
             best_ids = id_list
             best_frames = frame_list
             best_pose_pos = pose_pos
             best_rotation = pose_rotations
             best_tvec = np.mean(opti_pos - pose_pos, axis=0) 
+            #save best shifted data
+            # print(f"Best shift: {best_shift}, Error: {best_error}, Best frameset: {best_frameset}")
+            # find homogenous transformation matrix to align coordinate systems
+            #taking mean on rvec is not valid. Fix. (enten brug fra bedste fitting pose, eller brug anden metode)
+            # best_rvec = np.mean(pose_rot, axis=0)  # gennemsnit af pose rotation for nu... (FORKERT METODE)
             # R,_, = cv2.Rodrigues(best_rvec)
             # T = np.eye(3)
             # T[:3, :3] = R
             # T[:3, 3] = best_tvec
             # print("Homogeneous transformation matrix:")
             # print(T)
+        end_time = time.time()
+    print(f"Time taken for shift: {shift_end_time - shift_start_time} seconds")
+    print(f"Time taken for frame: {frame_end_time - frame_start_time} seconds")
+    print(f"Time taken for all shifts: {end_time - start_time} seconds")
+            
 
     #doesnt work yet, should be made as a new file to avoid having to find best shift every time?
     #note to self, best shifted dataset is saved in "name"shiftedpose/opti.csv
@@ -170,14 +183,15 @@ for frameset in range(int(scale)):
         writer = csv.writer(f)
         writer.writerow(new_data)
 
+    
 
 #should transform the pose data to the opti data for the best shift (NO ROTATION YET)
 transformed_data = []
 for pos,t,id,rot in zip(best_pose_pos,best_frames,best_ids,best_rotation):
-    print(rot)
     pose_in_opti = pos + best_tvec
     appendable = (t,*pose_in_opti, *rot,id)
     transformed_data.append(appendable)
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
 
+np.savetxt(save.replace(".csv", "opti.csv"), best_opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
 print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
