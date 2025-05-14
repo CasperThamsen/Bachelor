@@ -52,9 +52,9 @@ fps = 30 # phone fps
 #NO ROTATION AS NEW DATA IS IN EULER ANGLES AND POSE IS IN RODRIGUES
 
 scale = hz/fps
-for frameset in range(int(scale)):
+for frameset in range(int(1)):
     print(f"Processing frameset: {frameset}")
-    for shift in range(int(1000)):
+    for shift in range(0,1000,1):
         shifted_opti_start_time = shift
         opti_shifted = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
         index = pose_start_time
@@ -77,7 +77,7 @@ for frameset in range(int(scale)):
                 if index > duration_of_video:
                     break
             else:
-                opti_shifted[i][0] = np.inf #set data before start time to inf to remove in line 76
+                opti_shifted[i][0] = np.inf #set data before start time to inf to remove in next line (opti_shifted)
         # print(f"Data dropped: {data_dropped}")
 
         opti_shifted = opti_shifted[(opti_shifted[:,0] >= pose_start_time) & (opti_shifted[:,0] <= duration_of_video)]
@@ -124,7 +124,6 @@ for frameset in range(int(scale)):
 
 
 
-        pose_filtered = rot1pose[rot1pose[:,0] >= pose_start_time]
         #RMS error
         RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
         # combined_error = RMSE + mean_angular_difference
@@ -135,7 +134,6 @@ for frameset in range(int(scale)):
             opti_shifted = np.unique(opti_shifted,axis=0)
             best_frameset = frameset
             #save best shifted data
-            np.savetxt(save.replace(".csv", "pose.csv"), pose_filtered, delimiter=",", fmt='%.7f')
             np.savetxt(save.replace(".csv", "opti.csv"), opti_shifted, delimiter=",", fmt='%.7f', header=f"shifted by {shift}")
             print(f"Best shift: {best_shift}, Error: {best_error}, Best frameset: {best_frameset}")
             # find homogenous transformation matrix to align coordinate systems
@@ -160,7 +158,7 @@ for frameset in range(int(scale)):
 
 
 
-    new_data = [best_shift * scale, best_error, opti_start_time + best_shift*scale, Data_name]
+    new_data = [best_shift * scale, best_error, best_shift, Data_name]
     with open(save_location + "best_shifts.csv", "a", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(new_data)
@@ -169,7 +167,7 @@ for frameset in range(int(scale)):
 #should transform the pose data to the opti data for the best shift (NO ROTATION YET)
 transformed_data = []
 for pos,t,id in zip(best_pose_pos,best_frames,best_ids):
-    pose_in_opti = pos - best_tvec
+    pose_in_opti = pos + best_tvec
     appendable = (t,*pose_in_opti, id)
     transformed_data.append(appendable)
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')

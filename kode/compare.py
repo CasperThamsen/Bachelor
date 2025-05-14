@@ -7,7 +7,7 @@ val1 = np.loadtxt(file_name1, delimiter=',',skiprows=7)
 file_name2 = r"csvfiles\experiment_005pose_transformed.csv"
 val2 = np.loadtxt(file_name2, delimiter=',')
 
-val2_del = val2[val2[:,4] == 0]
+val2_del = val2[val2[:,4] == 13]
 
 fig, ax = plt.subplots()
 scale = 8
