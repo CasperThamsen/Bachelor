@@ -8,7 +8,7 @@ import cv2
 #They are formatted differently from the first visit.
 #Frame,Time (Seconds),RX,RZ,RY,X,Y,Z,RX,RZ,RY,X,Y,Z
 
-file_name = "experiment_005"
+file_name = "experiment_006"
 
 with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
@@ -33,15 +33,15 @@ with open(f"airporttestfiles/{file_name}"+"output.csv", 'w',newline='') as opti_
 
         rx1,rz1,ry1 = map(float, row[2:5])
         rx2,rz2,ry2 = map(float, row[8:11])
-        # board_rotation = np.array([rx2, rz2,ry2])
-        # phone_rotation = np.array([rx1, rz1,ry1 ])
-        # #Skulle gerne konvertere til rotation matrix, sammenligne dem og konvertere til vektor igen
-        # R_board, _ = cv2.Rodrigues(board_rotation)
-        # R_phone, _ = cv2.Rodrigues(phone_rotation)
-        # R_relative = R_board.T @ R_phone.T
-        # relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
-        # r = relative_rotation_vector.flatten()
-        writer.writerow([time, dx, dy, dz, rx2, ry2, rz2])
+        #convert euler to rotation matrix
+        euler_phone = np.array([rx2, ry2, rz2])
+        euler_board = np.array([rx1, ry1, rz1])
+        R_phone, _ = cv2.Rodrigues(np.radians(euler_phone))
+        R_board, _ = cv2.Rodrigues(np.radians(euler_board))
+        R_relative = R_board.T @ R_phone
+        relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
+        r = relative_rotation_vector.flatten()
+        writer.writerow([time, dx, dy, dz, *r])
 
 
 

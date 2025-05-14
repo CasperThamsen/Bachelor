@@ -14,7 +14,7 @@ from dataset_configs import datasets
 # Choose the dataset to run:
 # "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
 # "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
-selected = "experiment_005"  
+selected = "experiment_001"  
 cfg = datasets[selected]
 
 rot1optiLoc = cfg["rot1optiLoc"]
@@ -40,6 +40,7 @@ best_tvec = None
 best_pose_pos = None
 best_frames = None
 best_ids = None
+best_rotation = None
 fps = 30 # phone fps
 
 #2 methods are possible due to the framerate missmatch
@@ -52,7 +53,7 @@ fps = 30 # phone fps
 #NO ROTATION AS NEW DATA IS IN EULER ANGLES AND POSE IS IN RODRIGUES
 
 scale = hz/fps
-for frameset in range(int(1)):
+for frameset in range(int(scale)):
     print(f"Processing frameset: {frameset}")
     for shift in range(0,1000,1):
         shifted_opti_start_time = shift
@@ -88,29 +89,34 @@ for frameset in range(int(1)):
         opti_pos = []
         id_list = []
         frame_list = []
-        # pose_rotations = []
+        pose_rotations = []
         # opti_rotations = []
         #save common frames to a new file
         for frame in common_frames: 
             time = rot1pose[rot1pose[:,0] == frame, 0]
             ids = rot1pose[rot1pose[:,0] == frame, 7]
+            id_list.extend(ids)
+            frame_list.extend(time)
+
             pose_tvec = rot1pose[rot1pose[:,0] == frame, 1:7]
             opti_tvec = opti_shifted[opti_shifted[:,0] == frame, 1:7]
             opti_tvec_duplicate = np.repeat(opti_tvec, len(pose_tvec), axis=0)
+
             pose_pos.append(pose_tvec[:,0:3])
             opti_pos.append(opti_tvec_duplicate[:,0:3])
-            id_list.extend(ids)
-            frame_list.extend(time)
+            pose_rotations.append(pose_tvec[:,3:6])
             # pose_rot = pose_tvec[:,3:6]
             # opti_rot = opti_tvec_duplicate[:,3:6]
             # for i in range(len(pose_rot)):
             #         R_pose, _ = cv2.Rodrigues(pose_rot[i])
             #         R_opti, _ = cv2.Rodrigues(opti_rot[i])
 
-                    # pose_rotations.append(R_pose)
+            
                     # opti_rotations.append(R_opti)
+
         pose_pos = np.vstack(pose_pos)
         opti_pos = np.vstack(opti_pos)
+        pose_rotations = np.vstack(pose_rotations)
         
 
 
@@ -142,6 +148,7 @@ for frameset in range(int(1)):
             best_ids = id_list
             best_frames = frame_list
             best_pose_pos = pose_pos
+            best_rotation = pose_rotations
             best_tvec = np.mean(opti_pos - pose_pos, axis=0) 
             # R,_, = cv2.Rodrigues(best_rvec)
             # T = np.eye(3)
@@ -166,9 +173,10 @@ for frameset in range(int(1)):
 
 #should transform the pose data to the opti data for the best shift (NO ROTATION YET)
 transformed_data = []
-for pos,t,id in zip(best_pose_pos,best_frames,best_ids):
+for pos,t,id,rot in zip(best_pose_pos,best_frames,best_ids,best_rotation):
+    print(rot)
     pose_in_opti = pos + best_tvec
-    appendable = (t,*pose_in_opti, id)
+    appendable = (t,*pose_in_opti, *rot,id)
     transformed_data.append(appendable)
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
 
