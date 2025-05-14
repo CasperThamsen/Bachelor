@@ -148,7 +148,7 @@ for frameset in range(int(1)):
             best_ids = id_list
             best_frames = frame_list
             best_pose_pos = pose_pos
-            best_tvec = np.mean(pose_pos - opti_pos, axis=0) 
+            best_tvec = np.mean(opti_pos - pose_pos, axis=0) 
             # R,_, = cv2.Rodrigues(best_rvec)
             # T = np.eye(3)
             # T[:3, :3] = R
@@ -173,7 +173,7 @@ for frameset in range(int(1)):
 #should transform the pose data to the opti data for the best shift (NO ROTATION YET)
 transformed_data = []
 for pos,t,id in zip(best_pose_pos,best_frames,best_ids):
-    pose_in_opti = pos + best_tvec
+    pose_in_opti = pos - best_tvec
     appendable = (t,*pose_in_opti, id)
     transformed_data.append(appendable)
 np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
