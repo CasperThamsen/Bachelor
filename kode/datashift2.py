@@ -1,7 +1,4 @@
-import matplotlib.pyplot as plt
-import cv2
 import numpy as np
-import icecream as ic
 import csv
 from dataset_configs import datasets
 import time
