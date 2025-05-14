@@ -6,9 +6,9 @@ import csv
 from dataset_configs import datasets
 
 """ This script is used to find the best shift for the opti data to match the pose data.
-    It will iterate through a range of shifts and calculate the error between the shifted opti data and the pose data.
+    It will iterate through a range of shifts and calculate the RMSE between the shifted opti data and the pose data.
     this file is for handling experiment files which are all from the seconds visit to the airport
-    They are formatted differently from the first visit.
+    They are formatted frame,time(seconds),rx,rz,ry,x,y,z,rx,rz,ry,x,y,z. Rewritten to frame,x,y,z,rx,ry,rz in handledata2.py
     The most important difference is the change of time format from unix to frames, seconds."""
 
 # Choose the dataset to run:
@@ -49,8 +49,10 @@ fps = 30 # phone fps
 # will start with 1 and see results. 
 # currently takes every 8th element, maybe shift the "scale" by +1 for every possibility to match 8 frames per 1 frame
 
+#NO ROTATION AS NEW DATA IS IN EULER ANGLES AND POSE IS IN RODRIGUES
+
 scale = hz/fps
-for frameset in range(int(1)):
+for frameset in range(int(scale)):
     print(f"Processing frameset: {frameset}")
     for shift in range(int(1000)):
         shifted_opti_start_time = shift
