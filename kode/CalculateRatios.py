@@ -62,6 +62,9 @@ def main():
     mt.track_marker_with_missing_black_leg = False
     mt.locate_marker_init(frame=img[:, :, 1])
     poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
+    if number_of_markers == 0:
+        print("No markers detected.")
+        return
     sorted_poses = sort_by_sum(poses)
     desired_order = order_anticlockwise(sorted_poses,poses)
     normalized_distances = compute_normalized_distances(desired_order, number_of_markers)
@@ -74,14 +77,14 @@ def main():
 
     img_pairs_copy = img.copy()
     for i, pose in enumerate(poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x+20), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x-40), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 0), 5)
     for i, pose in enumerate(sorted_poses):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x-20), int(pose.y-20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0,0, 255), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x-120), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (0,0, 255), 5)
     for i, pose in enumerate(desired_order):
-        cv2.putText(img_pairs_copy, str(i), (int(pose.x), int(pose.y)), cv2.FONT_HERSHEY_SIMPLEX, 5, (255, 0, 0), 2)
-    cv2.putText(img_pairs_copy, "Green: detected order", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(img_pairs_copy, "Red: sorted order", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-    cv2.putText(img_pairs_copy, "Blue: desired order", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+        cv2.putText(img_pairs_copy, str(i), (int(pose.x+40), int(pose.y+20)), cv2.FONT_HERSHEY_SIMPLEX, 5, (255, 0, 0), 5)
+    cv2.putText(img_pairs_copy, "Green: detected order", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 3)
+    cv2.putText(img_pairs_copy, "Red: sorted order", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
+    cv2.putText(img_pairs_copy, "Blue: desired order", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
     cv2.namedWindow("Sorted Markers", cv2.WINDOW_NORMAL)
     cv2.resizeWindow("Sorted Markers", 1280, 720)
     cv2.imshow("Sorted Markers", img_pairs_copy)
