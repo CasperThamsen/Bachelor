@@ -36,11 +36,6 @@ def main():
     best_opti_shifted = None
     best_error = float('inf')
     best_frameset = None
-    best_tvec = None
-    best_pose_pos = None
-    best_frames = None
-    best_ids = None
-    best_rotation = None
     fps = 30 # phone fps
 
     #2 methods are possible due to the framerate missmatch
@@ -50,7 +45,6 @@ def main():
     # will start with 1 and see results. 
     # currently takes every 8th element, maybe shift the "scale" by +1 for every possibility to match 8 frames per 1 frame
 
-    #NO ROTATION AS NEW DATA IS IN EULER ANGLES AND POSE IS IN RODRIGUES
     scale = hz / fps
     num_frames = int(len(rot1opti)/8)
     intscale = int(scale)
@@ -144,22 +138,6 @@ def main():
                 best_shift = shift
                 best_opti_shifted = opti_duplicate.copy()
                 best_frameset = frameset
-                best_ids = id_list
-                best_frames = frame_list
-                best_pose_pos = pose_pos
-                best_rotation = pose_rotations
-                best_tvec = np.mean(opti_pos - pose_pos, axis=0) 
-                #save best shifted data
-                # print(f"Best shift: {best_shift}, Error: {best_error}, Best frameset: {best_frameset}")
-                # find homogenous transformation matrix to align coordinate systems
-                #taking mean on rvec is not valid. Fix. (enten brug fra bedste fitting pose, eller brug anden metode)
-                # best_rvec = np.mean(pose_rot, axis=0)  # gennemsnit af pose rotation for nu... (FORKERT METODE)
-                # R,_, = cv2.Rodrigues(best_rvec)
-                # T = np.eye(3)
-                # T[:3, :3] = R
-                # T[:3, 3] = best_tvec
-                # print("Homogeneous transformation matrix:")
-                # print(T)
             end_time = time.time()
             running_time = end_time - start_time
             print(f"\rRunning total time: {running_time:.2f} seconds", end='', flush=True)
@@ -181,15 +159,6 @@ def main():
         writer = csv.writer(f)
         writer.writerow(new_data)
 
-        
-
-    #should transform the pose data to the opti data for the best shift (NO ROTATION YET)
-    # transformed_data = []
-    # for pos,t,id,rot in zip(best_pose_pos,best_frames,best_ids,best_rotation):
-    #     pose_in_opti = pos + best_tvec
-    #     appendable = (t,*pose_in_opti, *rot,id)
-    #     transformed_data.append(appendable)
-    # np.savetxt(save.replace("shifted.csv", "pose_transformed.csv"), transformed_data, delimiter=",", fmt='%.7f')
 
     np.savetxt(save.replace(".csv", "opti.csv"), np.vstack(best_opti_shifted), delimiter=",", fmt='%.7f', header=f"shifted by {best_shift}")
     print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
