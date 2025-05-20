@@ -90,7 +90,6 @@ def main():
             id_list = []
             frame_list = []
             pose_rotations = []
-            opti_rotations = []
             opti_duplicate = []
             #save common frames to a new file
             frame_start_time = time.time()
@@ -104,12 +103,6 @@ def main():
                 pose_pos.append(pose_data[:,1:4])
                 opti_pos.append(opti_duplicate_tvec[:,1:4])
                 pose_rotations.append(pose_data[:,4:7])
-                # opti_rot = opti_tvec_duplicate[:,3:6]
-                # for row in zip(pose_data, opti_duplicate):
-                #         R_pose, _ = cv2.Rodrigues(pose_rotations[i][4:7])
-                #         R_opti, _ = cv2.Rodrigues(opti_duplicate[i][4:7])
-
-                        # opti_rotations.append(R_opti)
             frame_end_time = time.time()
 
             pose_pos = np.vstack(pose_pos)
@@ -118,17 +111,6 @@ def main():
             frame_list = np.concatenate(frame_list)
             id_list = np.concatenate(id_list)
             
-
-
-            # angular_differences = []
-            # for R_pose, R_opti in zip(pose_rotations, opti_rotations):
-            #     R_relative = R_opti.T @ R_pose
-            #     relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
-            #     angular_difference = np.linalg.norm(relative_rotation_vector)
-            #     angular_differences.append(angular_difference)
-            # mean_angular_difference = np.mean(angular_differences)
-
-
 
             #RMS error
             RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
