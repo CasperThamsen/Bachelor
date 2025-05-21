@@ -30,7 +30,7 @@ def main():
     
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = 'experiment_005'
+    save_name = 'experiment_002'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
     cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
     frame_width = int(cap.get(3))
@@ -124,6 +124,8 @@ def main():
                     min_distance = distance
                     closest_aruco_id = marker_ids[j]  # Get the ArUco marker ID
             closest_aruco_ids.append(closest_aruco_id)
+        
+
 
         frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
         with open(csv_file_name, "a",  newline="") as csvfile:
@@ -132,12 +134,20 @@ def main():
                 if i < len(marker_corners_n):
                     try:
                         marker_type = closest_aruco_ids[i] + 10
+                        if marker_type is not None:
+                            if marker_type == 10:
+                                if "marker_type_10_counter" not in globals():
+                                    global marker_type_10_counter
+                                    marker_type_10_counter = 0
+                                marker_type_10_counter += 1
                     except :
-                        pass
+                        marker_type = 100
                 else:   
                     marker_type = marker_ids[i-len(marker_corners_n)]
                 writer.writerow([frame_number,*tvec.flatten(),*rvec.flatten(), int(marker_type)])
+        
 
+        
           
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
@@ -150,6 +160,8 @@ def main():
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+    if "marker_type_10_counter" in globals():
+            print(f"marker_type_10_counter: {marker_type_10_counter}")
     #------------------------------------------------------------
     
 
