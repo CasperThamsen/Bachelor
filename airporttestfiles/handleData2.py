@@ -9,7 +9,7 @@ import rotationFix as RF
 #They are formatted differently from the first visit.
 #Frame,Time (Seconds),RX,RZ,RY,X,Y,Z,RX,RZ,RY,X,Y,Z
 
-file_name = "experiment_005"
+file_name = "experiment_001"
 
 with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
@@ -34,16 +34,18 @@ with open(f"airporttestfiles/{file_name}"+"output.csv", 'w',newline='') as opti_
 
         rx1,rz1,ry1 = map(float, row[2:5])
         rx2,rz2,ry2 = map(float, row[8:11])
-        R_phone = RF.euler_to_rotation_matrix(rx2, ry2, rz2)
-        R_board = RF.euler_to_rotation_matrix(rx1, ry1, rz1)
+        # R_phone = RF.euler_to_rotation_matrix(rx2, ry2, rz2)
+        # R_board = RF.euler_to_rotation_matrix(rx1, ry1, rz1)
         #convert euler to rotation matrix
-        
-        R_relative = R_board.T @ R_phone
-        relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
-        r = relative_rotation_vector.flatten()
+        # rx2 -= rx1
+        # ry2 -= ry1
+        # rz2 -= rz1
+        # R_relative = R_board.T @ R_phone
+        # relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
+        # r = relative_rotation_vector.flatten()
 
-        R = RF.rvec_to_euler(relative_rotation_vector)
-        writer.writerow([time, dx, dy, dz, *r])
+        # R = RF.rvec_to_euler(relative_rotation_vector)
+        writer.writerow([time, dx, dy, dz, rx2,ry2,rz2])
 
 
 
