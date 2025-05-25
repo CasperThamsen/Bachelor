@@ -33,7 +33,7 @@ def transform_data_aruco(optiData, poseData, save):
     # should transform the pose data to the opti data for the best shift based on aruco marker 0
     transformed_data_aruco = []
     #take mean if marker id == 0
-    id0_indices = np.where(poseData[:, 7] == 0)[0]
+    id0_indices = np.where(poseData[:, 7] == 10)[0]
     pose_id0 = poseData[id0_indices]
     aruco0_pose_tvec = pose_id0[:, 1:4]
     aruco0_pose_rvec = pose_id0[:, 4:7]
