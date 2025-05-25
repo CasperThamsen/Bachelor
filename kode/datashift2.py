@@ -27,7 +27,8 @@ def main():
     hz = cfg["hz"]
     save_location = r"csvfiles\\"
     save = save_location + save_name
-
+    rmseplot = []
+    shiftplot = []
 
 
     rot1opti = np.loadtxt(rot1optiLoc, delimiter=',')
@@ -47,8 +48,12 @@ def main():
 
     scale = hz / fps
     num_frames = int(len(rot1opti)/8)
-    intscale = int(scale)
+    num_frames *= 0.85 # removes 15% of the frames from the end to speed up the process (it is known the start time wont be in the last 15%)
+    num_frames = int(num_frames)
+    # intscale = int(scale)
+    intscale = 1 # for testing purposes, set to 1 to only test the first frameset
     start_time = time.time()
+    min_overlap = int(1 * len(rot1pose))
 
 
     for frameset in range(intscale): 
@@ -83,7 +88,6 @@ def main():
 
             opti_shifted = opti_shifted[(opti_shifted[:,0] >= pose_start_time) & (opti_shifted[:,0] <= duration_of_video)]
             common_frames = np.intersect1d(opti_shifted[:,0], rot1pose[:,0]) #Ensures both datasets have data in frame
-            
             # commented rotation out for now.
             pose_pos = []
             opti_pos = []
@@ -114,6 +118,8 @@ def main():
 
             #RMS error
             RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
+            rmseplot.append(RMSE)
+            shiftplot.append(shift)
             # combined_error = RMSE + mean_angular_difference
             if RMSE < best_error:
                 best_error = RMSE
@@ -122,10 +128,14 @@ def main():
                 best_frameset = frameset
             end_time = time.time()
             running_time = end_time - start_time
-            print(f"\rRunning total time: {running_time:.2f} seconds", end='', flush=True)
-        print(f"\nTime taken for shift: {shift_end_time - shift_start_time} seconds")
-        print(f"Time taken for frame: {frame_end_time - frame_start_time} seconds")
-        
+            print(f"\rRunning total time: {running_time:.2f} seconds, Shift: {shift}", end='', flush=True)
+
+        try :
+            print(f"\nTime taken for shift: {shift_end_time - shift_start_time} seconds")
+            print(f"Time taken for frame: {frame_end_time - frame_start_time} seconds")
+        except:
+            pass
+            
                 
 
         #doesnt work yet, should be made as a new file to avoid having to find best shift every time?
@@ -145,6 +155,17 @@ def main():
     np.savetxt(save.replace(".csv", "opti.csv"), np.vstack(best_opti_shifted), delimiter=",", fmt='%.7f', header=f"shifted by {best_shift}")
     print(f"Best shift: {best_shift}, Best RMSE: {best_error}, Best frameset: {best_frameset}")
     print(f"Time taken for all shifts: {end_time - start_time} seconds")
+
+    import matplotlib.pyplot as plt
+
+    plt.figure()
+    plt.plot(shiftplot, rmseplot)
+    plt.xlabel('Shift')
+    plt.ylabel('RMSE')
+    plt.title('RMSE vs Shift')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
 
 main()
