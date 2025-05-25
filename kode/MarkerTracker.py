@@ -211,7 +211,7 @@ class MarkerTracker:
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #noise to remove false positives
-            noise = 300
+            noise = 1
             #if there is no intensity withing marker ref, break
             if marker_intensity / (reference_intensity + noise) <= 0.5:
                 break
