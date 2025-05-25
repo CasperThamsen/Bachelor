@@ -22,7 +22,7 @@ def rvec_to_euler(rvec):
 
     return np.array([x, y, z])
 
-def euler_to_rotation_matrix(rx, ry, rz, order='xyz'):
+def euler_to_rotation_matrix(rx, ry, rz, order='zyx'):
     # Convert degrees to radians
     rx, ry, rz = np.radians([rx, ry, rz])
 
