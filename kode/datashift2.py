@@ -14,7 +14,7 @@ import cv2
 # "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
 # "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
 def main():
-    selected = "experiment_005"  
+    selected = "experiment_006"  
     cfg = datasets[selected]
 
     rot1optiLoc = cfg["rot1optiLoc"]
@@ -38,6 +38,8 @@ def main():
     best_error = float('inf')
     best_frameset = None
     fps = 30 # phone fps
+    #special case for experiment_004, where time is in unix format
+
 
     #2 methods are possible due to the framerate missmatch
     # 1. divide the opti data by 8, thereby making it 30hz and equal in size to the pose data
@@ -50,8 +52,8 @@ def main():
     num_frames = int(len(rot1opti)/8)
     num_frames *= 0.85 # removes 15% of the frames from the end to speed up the process (it is known the start time wont be in the last 15%)
     num_frames = int(num_frames)
-    # intscale = int(scale)
-    intscale = 1 # for testing purposes, set to 1 to only test the first frameset
+    intscale = int(scale)
+    # intscale = 1 # for testing purposes, set to 1 to only test the first frameset
     start_time = time.time()
     min_overlap = int(1 * len(rot1pose))
 
@@ -60,7 +62,7 @@ def main():
         print(f"Processing frameset: {frameset}")
         opti_downsampled = rot1opti[frameset::8].copy() # Downsample optitrack frame rate from 240 hz to 30 to match phone fps
         shift_start_time = time.time()
-        for shift in range(num_frames): #num_Frames
+        for shift in range(0, num_frames, 8): #num_Frames
             shifted_opti_start_time = shift
             opti_shifted = opti_downsampled.copy()
             index = pose_start_time
@@ -119,7 +121,7 @@ def main():
             #RMS error
             RMSE = np.sqrt(np.mean((opti_pos - pose_pos)**2))
             rmseplot.append(RMSE)
-            shiftplot.append(shift)
+            shiftplot.append(shift + frameset)
             # combined_error = RMSE + mean_angular_difference
             if RMSE < best_error:
                 best_error = RMSE
@@ -159,12 +161,12 @@ def main():
     import matplotlib.pyplot as plt
 
     plt.figure()
-    plt.plot(shiftplot, rmseplot)
+    plt.plot(shiftplot, rmseplot, linestyle='None', marker='o', markersize=2)
     plt.xlabel('Shift')
     plt.ylabel('RMSE')
-    plt.title('RMSE vs Shift')
     plt.grid(True)
     plt.tight_layout()
+    plt.savefig(r"datapictures\\" + "rmse_vs_shift" + Data_name + ".png")
     plt.show()
 
 
