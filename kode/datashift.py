@@ -11,7 +11,7 @@ from dataset_configs import datasets
 # Choose the dataset to run:
 # "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
 # "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
-selected = "experiment_001"  
+selected = "experiment_004"  
 cfg = datasets[selected]
 
 rot1optiLoc = cfg["rot1optiLoc"]

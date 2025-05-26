@@ -26,10 +26,10 @@ def main():
     optiData = np.loadtxt(optiLoc, delimiter=',', skiprows=1)
     poseData = np.loadtxt(poseLoc, delimiter=',')
 
-    transform_data_aruco(optiData, poseData, save)
+    transform_data_Nfold(optiData, poseData, save)
 
 
-def transform_data_aruco(optiData, poseData, save):
+def transform_data_Nfold(optiData, poseData, save):
     # should transform the pose data to the opti data for the best shift based on aruco marker 0
     transformed_data_aruco = []
     #take mean if marker id == 0
