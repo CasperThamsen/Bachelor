@@ -4,8 +4,10 @@ import numpy as np
 from icecream import ic
 import cv2.aruco as aruco
 import csv
+import time
 
 def main():
+    start_time = time.time()
     # Load calibration data
     calibration_data = np.load('phone_calibration.npz')
     mtx = calibration_data['mtx']
@@ -30,7 +32,7 @@ def main():
     
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = 'experiment_005'
+    save_name = 'experiment_004'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
     cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
     frame_width = int(cap.get(3))
@@ -47,6 +49,7 @@ def main():
     mt.expected_ratios = ratios
     with open(csv_file_name, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
+    ref_intensity = []
     while cap.isOpened():
         ret, img = cap.read()
         if not ret:
@@ -55,12 +58,13 @@ def main():
         #unitycoin clean bob lesson1
         #Initialize MarkerTracker functionality
         mt.locate_marker_init(frame = img[:,:,1])
-        poses, number_of_markers = mt.detect_multiple_markers(frame=img[:,:,1])
+        poses, number_of_markers, reference_intensity = mt.detect_multiple_markers(frame=img[:,:,1])
         distance_between_markers = mt.distances_between_markers(poses,number_of_markers)
         marker_pairs = mt.detect_marker_pairs(poses,distance_between_markers)
         mt.numerate_markers(marker_pairs)
         marker_corners_n = mt.marker_corners(marker_pairs)
         
+        ref_intensity.append(reference_intensity)
 
         #marker differentiation
         marker_corners = []
@@ -144,11 +148,16 @@ def main():
                         marker_type = 100
                 else:   
                     marker_type = marker_ids[i-len(marker_corners_n)]
+                    if marker_type == 0:
+                        if "marker_type_0_counter" not in globals():
+                            global marker_type_0_counter
+                            marker_type_0_counter = 0
+                        marker_type_0_counter += 1
                 writer.writerow([frame_number,*tvec.flatten(),*rvec.flatten(), int(marker_type)])
         
 
-        
-          
+        running_time = time.time() - start_time
+        print(f"\rRunning total time: {running_time:.2f}, Frame number: {frame_number}", end='', flush=True)
         out.write(img_copy)
         cv2.namedWindow("sorted_pairs_test", cv2.WINDOW_NORMAL)
         # screen_width = 1280
@@ -160,9 +169,16 @@ def main():
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+    end_time = time.time()
+    print(f"Total processing time: {end_time - start_time:.2f} seconds")
     if "marker_type_10_counter" in globals():
             print(f"marker_type_10_counter: {marker_type_10_counter}")
+    if "marker_type_0_counter" in globals():
+            print(f"marker_type_0_counter: {marker_type_0_counter}")
+    print(f"Reference intensity: {np.mean(ref_intensity)}")
+    
     #------------------------------------------------------------
+
     
 
 main()
