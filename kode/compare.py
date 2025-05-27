@@ -4,10 +4,10 @@ import cv2
 import rotationFix as RF
 from dataset_configs import datasets
 
-selected = "experiment_005"  
+selected = "experiment_006"  
 cfg = datasets[selected]
-scale = 8
-offset = 880
+scale = cfg["hz"] / 30
+offset = cfg["offset"]
 duration_of_video = cfg["duration_of_video"]
 file_name1 = f"airporttestfiles\\" + selected + "output.csv"
 file_name2 = f"csvfiles\\" + selected + "pose_transformed.csv"
@@ -36,9 +36,9 @@ fig, ax = plt.subplots()
 # ax.plot(val2_del[:,0] * scale + offset, val2_del[:,1], '.r',   markersize=2)
 # ax.plot(val2_del[:,0] * scale + offset, val2_del[:,2], '.g',markersize=2)
 # ax.plot(val2_del[:,0] * scale + offset, val2_del[:,3], '.b',markersize=2)
-# ax.plot(val2_del[:,0] * scale + offset, val2_del[:,4], 'm', label='pose rx')
-# ax.plot(val2_del[:,0] * scale + offset, val2_del[:,5], 'y', label='pose ry')
-# ax.plot(val2_del[:,0] * scale + offset, val2_del[:,6], 'c', label='pose rz')
+ax.plot(val2_del[:,0] * scale + offset, val2_del[:,4], 'm', label='pose rx')
+ax.plot(val2_del[:,0] * scale + offset, val2_del[:,5], 'y', label='pose ry')
+ax.plot(val2_del[:,0] * scale + offset, val2_del[:,6], 'c', label='pose rz')
 
 
 

@@ -9,23 +9,15 @@ import rotationFix as rotFix
 # "rotation1", "rotation2", "1marker", "1markerfar", "5markervid1", "5markervid2",
 # "experiment_001", "experiment_002", "experiment_003", "experiment_005", "experiment_006"
 def main():
-    selected = "experiment_005"  
+    selected = "experiment_006"  
     cfg = datasets[selected]
-
     optiLoc = f"csvfiles\\" + selected + "shiftedopti.csv"
     poseLoc = cfg["rot1poseLoc"]
-    Data_name = cfg["Data_name"]
     save_name = cfg["save_name"]
-    pose_start_time = cfg["pose_start_time"]
-    opti_start_time = cfg["opti_start_time"]
-    duration_of_video = cfg["duration_of_video"]
-    hz = cfg["hz"]
     save_location = r"csvfiles\\"
     save = save_location + save_name
-
     optiData = np.loadtxt(optiLoc, delimiter=',', skiprows=1)
     poseData = np.loadtxt(poseLoc, delimiter=',')
-
     transform_data_Nfold(optiData, poseData, save)
 
 

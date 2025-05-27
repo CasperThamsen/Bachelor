@@ -8,6 +8,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 1155,
         "hz": 240,
+        "offset": 872,
     },
     "experiment_002": {
         "rot1optiLoc": r"airporttestfiles\experiment_002output.csv",
@@ -18,6 +19,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 1411,
         "hz": 240,
+        "offset": 488,
     },
     "experiment_003": {
         "rot1optiLoc": r"airporttestfiles\experiment_003output.csv",
@@ -28,6 +30,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 1063,
         "hz": 240,
+        "offset": 528,
     },
     "experiment_005": {
         "rot1optiLoc": r"airporttestfiles\experiment_005output.csv",
@@ -38,6 +41,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 1014,
         "hz": 240,
+        "offset": 888,
     },
         "experiment_004": {
         "rot1optiLoc": r"airporttestfiles\experiment_004output.csv",
@@ -48,6 +52,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 910,
         "hz": 30,
+        "offset": None,
     },
     "experiment_006": {
         "rot1optiLoc": r"airporttestfiles\experiment_006output.csv",
@@ -58,6 +63,7 @@ datasets = {
         "opti_start_time": 0,
         "duration_of_video": 968,
         "hz": 240,
+        "offset": 904,
         # "data_"
     },
 

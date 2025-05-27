@@ -32,7 +32,7 @@ def main():
     
     #---------------------------------------------------------------
     #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = 'experiment_004'
+    save_name = 'experiment_003'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
     cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
     frame_width = int(cap.get(3))

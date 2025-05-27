@@ -211,7 +211,7 @@ class MarkerTracker:
             if reference_intensity is None:
                 reference_intensity = marker_intensity
             #noise to remove false positives
-            noise = 1075
+            noise = 1000
             #if there is no intensity withing marker ref, break
             if marker_intensity / (reference_intensity + noise) <= 0.25:
                 break
@@ -264,7 +264,7 @@ class MarkerTracker:
                     permutations_list = permutations(current_list[1:])
                     for perm in permutations_list:
                         current_list = [current_list[0]] + list(perm)
-                        if self.validate_marker_pair(current_list, tolerance=0.5):
+                        if self.validate_marker_pair(current_list, tolerance=0.8):
                             marker_pairs.append(current_list)
                             break
         return marker_pairs
