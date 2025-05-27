@@ -6,10 +6,10 @@ from dataset_configs import datasets
 from matplotlib.patches import Patch
 
 
-selected = "experiment_005"  
+selected = "experiment_001"  
 cfg = datasets[selected]
-scale = 8
-offset = 873
+scale = int(cfg["hz"] / 30)
+offset = cfg["offset"]
 duration_of_video = cfg["duration_of_video"]
 file_name1 = f"airporttestfiles\\" + selected + "output.csv"
 file_name2 = f"csvfiles\\" + selected + "pose_transformed.csv"
@@ -21,17 +21,26 @@ val1 = np.loadtxt(file_name1, delimiter=',',skiprows=7+offset, max_rows=duration
 # file_name2 = r"csvfiles\experiment_005pose_transformed.csv"
 val2 = np.loadtxt(file_name2, delimiter=',')
 def analyze_marker(marker_id):
-    val2_del = val2[val2[:,7] == marker_id]
-    pose_time = val2_del[:, 0] * scale + offset  # Convert pose frame count to OptiTrack timebase
-    opti_time = val1[:, 0]  # Already in OptiTrack timebase
-    common_times, idx_opti, idx_pose = np.intersect1d(opti_time, pose_time, return_indices=True)
-    aligned_opti = val1[idx_opti]
-    aligned_pose = val2_del[idx_pose]
-    error_xyz = aligned_opti[:, 1:4] - aligned_pose[:, 1:4]  # (X, Y, Z)
+    if marker_id < 10:
+        marker_id2 = marker_id + 10
+    else:
+        marker_id2 = marker_id - 10
 
-    z_distance = aligned_opti[:, 3]  # Z position from OptiTrack
+    val2_id1 = val2[val2[:, 7] == marker_id]
+    val2_id2 = val2[val2[:, 7] == marker_id2]
+    common_times = np.intersect1d(val2_id2[:, 0], val2_id1[:, 0])
+    val2_id1_common = val2_id1[np.isin(val2_id1[:, 0], common_times)]
+    pose_time = val2_id1_common[:, 0] * scale + offset
+    opti_time = val1[:, 0]
+    common_times2, idx_opti, idx_pose = np.intersect1d(opti_time, pose_time, return_indices=True)
+    
+    aligned_opti = val1[idx_opti]
+    aligned_pose = val2_id1_common[idx_pose]
+    error_xyz = aligned_opti[:, 1:4] - aligned_pose[:, 1:4]
+    z_distance = aligned_opti[:, 3]
+
     return error_xyz, z_distance, marker_id, aligned_opti
-def analyze_errors(error_xyz, z_distance, marker_id, z_bins=None):
+def analyze_errors(error_xyz, z_distance, marker_id, z_bins=None, print_metrics=True):
     if z_bins is None:
         z_bins = np.arange(0, 8, 1)
     num_bins = len(z_bins) - 1
@@ -112,152 +121,101 @@ def analyze_errors(error_xyz, z_distance, marker_id, z_bins=None):
     std_x_arr = np.array(std_x_bins)
     std_y_arr = np.array(std_y_bins)
     std_z_arr = np.array(std_z_bins)
+    if print_metrics:
+        # Print metrics
+        print(f"==== Position Error Metrics for Marker {marker_id} ====")
+        print("==== Position Error Metrics per Z Bin ====")
+        print(f"{'Bin Range (m)':<12} | {'Mean X':>7} | {'Mean Y':>7} | {'Mean Z':>7} | {'STD X':>7} | {'STD Y':>7} | {'STD Z':>7}")
+        print("-" * 80)
+        for i in range(num_bins):
+            bin_range = f"{z_bins[i]:.1f}-{z_bins[i+1]:.1f}"
+            print(f"{bin_range:<12} | "
+                f"{mean_x_arr[i]:7.3f} | {mean_y_arr[i]:7.3f} | {mean_z_arr[i]:7.3f} | "
+                f"{std_x_arr[i]:7.3f} | {std_y_arr[i]:7.3f} | {std_z_arr[i]:7.3f}")
 
-    # Print metrics
-    print(f"==== Position Error Metrics for Marker {marker_id} ====")
-    print("==== Position Error Metrics per Z Bin ====")
-    print(f"{'Bin Range (m)':<12} | {'Mean X':>7} | {'Mean Y':>7} | {'Mean Z':>7} | {'STD X':>7} | {'STD Y':>7} | {'STD Z':>7}")
-    print("-" * 80)
-    for i in range(num_bins):
-        bin_range = f"{z_bins[i]:.1f}-{z_bins[i+1]:.1f}"
-        print(f"{bin_range:<12} | "
-              f"{mean_x_arr[i]:7.3f} | {mean_y_arr[i]:7.3f} | {mean_z_arr[i]:7.3f} | "
-              f"{std_x_arr[i]:7.3f} | {std_y_arr[i]:7.3f} | {std_z_arr[i]:7.3f}")
+        # Plot Mean and STD for X, Y, Z
+        metrics = ['X', 'Y', 'Z']
+        # mean_vals = [mean_x, mean_y, mean_z]
+        # std_vals = [std_x, std_y, std_z]
 
-    # Plot Mean and STD for X, Y, Z
-    metrics = ['X', 'Y', 'Z']
-    # mean_vals = [mean_x, mean_y, mean_z]
-    # std_vals = [std_x, std_y, std_z]
+        x = np.arange(len(metrics))
+        width = 0.2  # Adjusted width for 2 bars
 
-    x = np.arange(len(metrics))
-    width = 0.2  # Adjusted width for 2 bars
+        # # Plot 1: Error vs Z distance
+        # fig2 = plt.figure()
+        # fig2.suptitle(f"Marker: {marker_id}")
+        # plt.plot(z_distance, error_xyz[:, 0], '.r', label='X error')
+        # plt.plot(z_distance, error_xyz[:, 1], '.g', label='Y error')
+        # plt.plot(z_distance, error_xyz[:, 2], '.b', label='Z error')
+        # plt.xlabel('OptiTrack Z Position (m)')
+        # plt.ylabel('Position Error (m)')
+        # plt.title(f'Pose vs OptiTrack Position Error marker {marker_id}')
+        # plt.savefig('position_error.png')
+        # plt.legend()
+        # plt.grid(True)
 
-    # Bar chart for error metrics including STD
-    # fig1 = plt.figure()
-    # fig1.suptitle(f"Marker: {marker_id}")
-    # # plt.bar(x - 0.5*width, mean_vals, width, label='Mean')
-    # # plt.bar(x + 0.5*width, std_vals, width, label='STD')
-    # plt.bar(x, [mean_x, mean_y, mean_z], width, label='Mean')
-    # plt.bar(x + width, [std_x, std_y, std_z], width, label='STD')
-    # plt.xticks(x, metrics)
-    # plt.ylabel('Error (m)')
-    # plt.title('Position Error Metrics (X, Y, Z)')
-    # plt.legend()
-    # plt.grid(axis='y')
-    # plt.tight_layout()
-    # plt.savefig('position_error_metrics.png')
+        # Plot 2: Mean and STD over Z bins for X, Y, Z using error bars
+        fig, ax = plt.subplots()
+        fig.suptitle(f"Marker: {marker_id} - Mean and STD of Error by Z Bin")
+        offset = 0.08  # horizontal offset for each error bar group
+        ax.errorbar(z_bin_centers - offset, mean_x_arr, yerr=std_x_arr, fmt='-o', color='r', label='X', capsize=5)
+        ax.errorbar(z_bin_centers, mean_y_arr, yerr=std_y_arr, fmt='-o', color='g', label='Y', capsize=5)
+        ax.errorbar(z_bin_centers + offset, mean_z_arr, yerr=std_z_arr, fmt='-o', color='b', label='Z', capsize=5)
+        ax.set_xlabel('OptiTrack Z Position (m)')
+        ax.set_ylabel('Mean Error (m)')
+        ax.set_title('Mean Error with STD over Z Bins')
+        ax.legend()
+        ax.grid(True)
 
-    # Plot 2: Error vs Z distance
-    fig2 = plt.figure()
-    fig2.suptitle(f"Marker: {marker_id}")
-    plt.plot(z_distance, error_xyz[:, 0], '.r', label='X error')
-    plt.plot(z_distance, error_xyz[:, 1], '.g', label='Y error')
-    plt.plot(z_distance, error_xyz[:, 2], '.b', label='Z error')
-    plt.xlabel('OptiTrack Z Position (m)')
-    plt.ylabel('Position Error (m)')
-    plt.title(f'Pose vs OptiTrack Position Error marker {marker_id}')
-    plt.savefig('position_error.png')
-    plt.legend()
-    plt.grid(True)
+        # # Plot 3: Mean error with error bars (STD) vs Z bin centers ("I" bars, i.e., error bars)
+        # # Plot 3: Mean error over time with shaded ±1 std (and ±2 std for 95% confidence)
+        # fig3 = plt.figure()
+        # fig3.suptitle(f"Marker: {marker_id} - Error Distribution by Z Bin (Box Plot)")
 
-    # Plot 3: Mean error with error bars (STD) vs Z bin centers ("I" bars, i.e., error bars)
-    # Plot 3: Mean error over time with shaded ±1 std (and ±2 std for 95% confidence)
-    fig3 = plt.figure()
-    fig3.suptitle(f"Marker: {marker_id} - Error Distribution by Z Bin (Box Plot)")
+        # # Collect errors per bin for each axis
+        # errors_x, errors_y, errors_z = [], [], []
+        # for i in range(len(z_bins) - 1):
+        #     in_bin = (z_distance >= z_bins[i]) & (z_distance < z_bins[i+1])
+        #     errors_in_bin = error_xyz[in_bin]
+        #     # If no data in bin, append empty array for consistent plotting
+        #     if errors_in_bin.size == 0:
+        #         errors_x.append([])
+        #         errors_y.append([])
+        #         errors_z.append([])
+        #     else:
+        #         errors_x.append(errors_in_bin[:, 0])
+        #         errors_y.append(errors_in_bin[:, 1])
+        #         errors_z.append(errors_in_bin[:, 2])
 
-    # Collect errors per bin for each axis
-    errors_x, errors_y, errors_z = [], [], []
-    for i in range(len(z_bins) - 1):
-        in_bin = (z_distance >= z_bins[i]) & (z_distance < z_bins[i+1])
-        errors_in_bin = error_xyz[in_bin]
-        # If no data in bin, append empty array for consistent plotting
-        if errors_in_bin.size == 0:
-            errors_x.append([])
-            errors_y.append([])
-            errors_z.append([])
-        else:
-            errors_x.append(errors_in_bin[:, 0])
-            errors_y.append(errors_in_bin[:, 1])
-            errors_z.append(errors_in_bin[:, 2])
+        # box_positions = np.arange(len(z_bin_centers))
+        # box_width = 0.25
 
-    box_positions = np.arange(len(z_bin_centers))
-    box_width = 0.25
+        # # Plot each boxplot and keep the artists for legend
+        # plt.boxplot(errors_x, positions=box_positions - box_width, widths=box_width, patch_artist=True,
+        #                     boxprops=dict(facecolor='r', alpha=0.4), medianprops=dict(color='r'), tick_labels=['']*len(z_bin_centers))
+        # plt.boxplot(errors_y, positions=box_positions, widths=box_width, patch_artist=True,
+        #                     boxprops=dict(facecolor='g', alpha=0.4), medianprops=dict(color='g'), tick_labels=['']*len(z_bin_centers))
+        # plt.boxplot(errors_z, positions=box_positions + box_width, widths=box_width, patch_artist=True,
+        #                     boxprops=dict(facecolor='b', alpha=0.4), medianprops=dict(color='b'), tick_labels=['']*len(z_bin_centers))
 
-    # Plot each boxplot and keep the artists for legend
-    plt.boxplot(errors_x, positions=box_positions - box_width, widths=box_width, patch_artist=True,
-                        boxprops=dict(facecolor='r', alpha=0.4), medianprops=dict(color='r'), tick_labels=['']*len(z_bin_centers))
-    plt.boxplot(errors_y, positions=box_positions, widths=box_width, patch_artist=True,
-                        boxprops=dict(facecolor='g', alpha=0.4), medianprops=dict(color='g'), tick_labels=['']*len(z_bin_centers))
-    plt.boxplot(errors_z, positions=box_positions + box_width, widths=box_width, patch_artist=True,
-                        boxprops=dict(facecolor='b', alpha=0.4), medianprops=dict(color='b'), tick_labels=['']*len(z_bin_centers))
+        # plt.xticks(box_positions, [f"{z_bins[i]:.1f}-{z_bins[i+1]:.1f}" for i in range(len(z_bin_centers))], rotation=45)
+        # plt.xlabel('OptiTrack Z Position (m)')
+        # plt.ylabel('Position Error (m)')
+        # plt.title('Position Error Distribution by Z Bin (Box Plot)')
+        # # Use proxy artists for correct legend colors
+        # legend_handles = [
+        #     Patch(facecolor='r', edgecolor='r', alpha=0.4, label='X'),
+        #     Patch(facecolor='g', edgecolor='g', alpha=0.4, label='Y'),
+        #     Patch(facecolor='b', edgecolor='b', alpha=0.4, label='Z')
+        # ]
+        plt.legend()
+        plt.grid(axis='y')
+        plt.tight_layout()
 
-    plt.xticks(box_positions, [f"{z_bins[i]:.1f}-{z_bins[i+1]:.1f}" for i in range(len(z_bin_centers))], rotation=45)
-    plt.xlabel('OptiTrack Z Position (m)')
-    plt.ylabel('Position Error (m)')
-    plt.title('Position Error Distribution by Z Bin (Box Plot)')
-    # Use proxy artists for correct legend colors
-    legend_handles = [
-        Patch(facecolor='r', edgecolor='r', alpha=0.4, label='X'),
-        Patch(facecolor='g', edgecolor='g', alpha=0.4, label='Y'),
-        Patch(facecolor='b', edgecolor='b', alpha=0.4, label='Z')
-    ]
-    plt.legend(handles=legend_handles)
-    plt.grid(axis='y')
-    plt.tight_layout()
-   
-        
-
-
-    # Plot 4: Bar chart for Mean vs Z bin
-    # labels = [f'{z_bins[i]}-{z_bins[i+1]}m' for i in range(num_bins)]
-    # x = np.arange(num_bins)
-    # width = 0.25
-    # fig4, axs = plt.subplots(2, 1, sharex=True)
-    # # Mean subplot
-    # fig4.suptitle(f"Marker: {marker_id}")
-    # axs[0].bar(x - width/2, mean_x_arr, width, label='X', color='r')
-    # axs[0].bar(x + width/2, mean_y_arr, width, label='Y', color='g')
-    # axs[0].bar(x + 1.5*width, mean_z_arr, width, label='Z', color='b')
-    # axs[0].set_title('Mean Error vs Z Distance Bins')
-    # axs[0].set_ylabel('Mean Error (m)')
-    # axs[0].legend()
-    # axs[0].grid(axis='y')
-
-    # # STD subplot
-    # axs[1].bar(x - width/2, std_x_arr, width, label='X', color='r')
-    # axs[1].bar(x + width/2, std_y_arr, width, label='Y', color='g')
-    # axs[1].bar(x + 1.5*width, std_z_arr, width, label='Z', color='b')
-    # axs[1].set_title('STD vs Z Distance Bins')
-    # axs[1].set_xlabel('OptiTrack Z Position (m)')
-    # axs[1].set_ylabel('STD (m)')
-    # axs[1].legend()
-    # axs[1].grid(axis='y')
-    # # Set x-ticks to bin labels
-    # axs[1].set_xticks(x)
-    # axs[1].set_xticklabels(labels, rotation=45, ha='right')
-
-    # Plot 3: line plot for Mean and STD vs Z bin centers
-    # fig3 = plt.figure()
-    # fig3.suptitle(f"Marker: {marker_id}")
-    # plt.plot(z_bin_centers, mean_x_arr, 'r--s', label='Mean X')
-    # plt.plot(z_bin_centers, mean_y_arr, 'g--s', label='Mean Y')
-    # plt.plot(z_bin_centers, mean_z_arr, 'b--s', label='Mean Z')
-
-    # plt.plot(z_bin_centers, std_x_arr, 'r:', label='STD X')
-    # plt.plot(z_bin_centers, std_y_arr, 'g:', label='STD Y')
-    # plt.plot(z_bin_centers, std_z_arr, 'b:', label='STD Z')
-
-    # plt.xlabel('OptiTrack Z Position (m)')
-    # plt.ylabel('Error (m)')
-    # plt.title('Position Error Metrics vs Z Distance')
-    # plt.legend()
-    # plt.grid(True)
-    # plt.tight_layout()
-
-    # Return the computed metrics if you want to use them later
-    [plt.figure(num).savefig(fr"datapictures\errorImages\marker{marker_id}\test{i}.png") for i, num in enumerate(plt.get_fignums())]
-    plt.show()
-    plt.close('all')
+        # Return the computed metrics if you want to use them later
+        [plt.figure(num).savefig(fr"datapictures\errorImages\marker{marker_id}\test{i}.png") for i, num in enumerate(plt.get_fignums())]
+        plt.show()
+        plt.close('all')
     return {
         # "rmse": (rmse_x, rmse_y, rmse_z),
         "mean": (mean_x, mean_y, mean_z),
