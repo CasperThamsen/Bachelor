@@ -9,7 +9,7 @@ import rotationFix as RF
 #They are formatted differently from the first visit.
 #Frame,Time (Seconds),RX,RZ,RY,X,Y,Z,RX,RZ,RY,X,Y,Z
 
-file_name = "experiment_001"
+file_name = "experiment_005"
 
 with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
@@ -32,8 +32,8 @@ with open(f"airporttestfiles/{file_name}"+"output.csv", 'w',newline='') as opti_
         dz = z2 - z1
 
 
-        rx1,rz1,ry1 = map(float, row[2:5])
-        rx2,rz2,ry2 = map(float, row[8:11])
+        rx1,ry1,rz1 = map(float, row[2:5])
+        rx2,ry2,rz2 = map(float, row[8:11])
         # R_phone = RF.euler_to_rotation_matrix(rx2, ry2, rz2)
         # R_board = RF.euler_to_rotation_matrix(rx1, ry1, rz1)
         #convert euler to rotation matrix
