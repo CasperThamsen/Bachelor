@@ -61,7 +61,7 @@ def main():
                                       scale_factor=1)
     mt.track_marker_with_missing_black_leg = False
     mt.locate_marker_init(frame=img[:, :, 1])
-    poses, number_of_markers = mt.detect_multiple_markers(frame=img[:, :, 1])
+    poses, number_of_markers, _ = mt.detect_multiple_markers(frame=img[:, :, 1])
     if number_of_markers == 0:
         print("No markers detected.")
         return
