@@ -30,9 +30,7 @@ def main():
     dictionary = aruco.getPredefinedDictionary(aruco.DICT_6X6_50)
     detector = aruco.ArucoDetector(dictionary, detector_params)
     
-    #---------------------------------------------------------------
-    #'C:/Users/caspe/Workspace/Bachelor/airporttestfiles/1marker.mp4'
-    save_name = 'experiment_003'
+    save_name = 'experiment_005'
     csv_file_name = r"csvfiles\\" + save_name+'pose.csv'
     cap = cv2.VideoCapture(r"videos\unprocessed\\" + save_name + ".mp4")
     frame_width = int(cap.get(3))
@@ -50,6 +48,9 @@ def main():
     with open(csv_file_name, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
     ref_intensity = []
+
+    
+
     while cap.isOpened():
         ret, img = cap.read()
         if not ret:
