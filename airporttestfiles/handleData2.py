@@ -2,14 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 import cv2
-import rotationFix as RF
 
 
 #this file is for handling experiment files which are all from the seconds visit to the airport
 #They are formatted differently from the first visit.
 #Frame,Time (Seconds),RX,RZ,RY,X,Y,Z,RX,RZ,RY,X,Y,Z
 
-file_name = "experiment_005"
+file_name = "experiment_006"
 
 with open(f"airporttestfiles/{file_name}.csv", "r") as opti_file:
     reader = csv.reader(opti_file)
@@ -30,21 +29,8 @@ with open(f"airporttestfiles/{file_name}"+"output.csv", 'w',newline='') as opti_
         dx = x2 - x1
         dy = y2 - y1
         dz = z2 - z1
-
-
         rx1,ry1,rz1 = map(float, row[2:5])
         rx2,ry2,rz2 = map(float, row[8:11])
-        # R_phone = RF.euler_to_rotation_matrix(rx2, ry2, rz2)
-        # R_board = RF.euler_to_rotation_matrix(rx1, ry1, rz1)
-        #convert euler to rotation matrix
-        # rx2 -= rx1
-        # ry2 -= ry1
-        # rz2 -= rz1
-        # R_relative = R_board.T @ R_phone
-        # relative_rotation_vector, _ = cv2.Rodrigues(R_relative)
-        # r = relative_rotation_vector.flatten()
-
-        # R = RF.rvec_to_euler(relative_rotation_vector)
         writer.writerow([time, dx, dy, dz, rx2,ry2,rz2])
 
 
