@@ -313,7 +313,7 @@ aruco_std = []
 for i in loop_list:
     # Analyze marker i (Aruco)
     error_xyz1, z_distance1, marker_id1, aligned_opti1 = analyze_marker(i)
-    metrics1 = analyze_errors(error_xyz1, z_distance1, marker_id1, plot_metrics=False, print_metrics=True)
+    metrics1 = analyze_errors(error_xyz1, z_distance1, marker_id1, plot_metrics=False, print_metrics=False)
     std_bins1 = np.stack(metrics1["std_bins"], axis=0)  # shape: (3, num_bins)
     mean_bins1 = np.stack(metrics1["mean_bins"], axis=0)  # shape: (3, num_bins)
     aruco_std.append(std_bins1)
@@ -321,7 +321,7 @@ for i in loop_list:
         aruco_mean_bins = mean_bins1
     # Analyze marker i+10 (N-fold)
     error_xyz2, z_distance2, marker_id2, aligned_opti2 = analyze_marker(i + 10)
-    metrics2 = analyze_errors(error_xyz2, z_distance2, marker_id2, plot_metrics=False, print_metrics=True)
+    metrics2 = analyze_errors(error_xyz2, z_distance2, marker_id2, plot_metrics=False, print_metrics=False)
     std_bins2 = np.stack(metrics2["std_bins"], axis=0)  # shape: (3, num_bins)
     mean_bins2 = np.stack(metrics2["mean_bins"], axis=0)  # shape: (3, num_bins)
     nfold_Std.append(std_bins2)
@@ -385,26 +385,33 @@ avg_nfold_rot_std = np.nanmean(nfold_rot_std, axis=0)
 
 # Plot mean and std for rotation (Aruco)
 plt.figure()
-plt.errorbar(z_bin_centers, avg_aruco_rot_mean[:, 1], yerr=avg_aruco_rot_std[:, 1], fmt='-o', color='r', label='Aruco Rot X')
-plt.errorbar(z_bin_centers - 0.1, avg_aruco_rot_mean[:, 0], yerr=avg_aruco_rot_std[:, 0], fmt='-o', color='g', label='Aruco Rot Y')
-plt.errorbar(z_bin_centers + 0.1, avg_aruco_rot_mean[:, 2], yerr=avg_aruco_rot_std[:, 2], fmt='-o', color='b', label='Aruco Rot Z')
+plt.errorbar(z_bin_centers, avg_aruco_rot_mean[:, 1], yerr=avg_aruco_rot_std[:, 1], fmt='-o', color='r', label='Aruco Rot X',capsize=5)
+plt.errorbar(z_bin_centers - 0.1, avg_aruco_rot_mean[:, 0], yerr=avg_aruco_rot_std[:, 0], fmt='-o', color='b', label='Aruco Rot Z',capsize=5)
+plt.errorbar(z_bin_centers + 0.1, avg_aruco_rot_mean[:, 2], yerr=avg_aruco_rot_std[:, 2], fmt='-o', color='g', label='Aruco Rot Y',capsize=5)
 plt.xlabel('OptiTrack Z Position (m)')
 plt.ylabel('Rotation Error (deg)')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.savefig(f"datapictures/errorImages/rot/aruco_rotation_mean_std_{selected}.png")
+ax = plt.gca()
+xlim = ax.get_xlim()
+ylim = ax.get_ylim()
+plt.close()
+
 
 # Plot mean and std for rotation (N-fold)
 plt.figure()
-plt.errorbar(z_bin_centers, avg_nfold_rot_mean[:, 1], yerr=avg_nfold_rot_std[:, 1], fmt='-o', color='r', label='N-fold Rot X')
-plt.errorbar(z_bin_centers - 0.1, avg_nfold_rot_mean[:, 0], yerr=avg_nfold_rot_std[:, 0], fmt='-o', color='g', label='N-fold Rot Y')
-plt.errorbar(z_bin_centers + 0.1, avg_nfold_rot_mean[:, 2], yerr=avg_nfold_rot_std[:, 2], fmt='-o', color='b', label='N-fold Rot Z')
+plt.errorbar(z_bin_centers, avg_nfold_rot_mean[:, 1], yerr=avg_nfold_rot_std[:, 1], fmt='-o', color='r', label='N-fold Rot X',capsize=5)
+plt.errorbar(z_bin_centers - 0.1, avg_nfold_rot_mean[:, 0], yerr=avg_nfold_rot_std[:, 0], fmt='-o', color='b', label='N-fold Rot Z',capsize=5)
+plt.errorbar(z_bin_centers + 0.1, avg_nfold_rot_mean[:, 2], yerr=avg_nfold_rot_std[:, 2], fmt='-o', color='g', label='N-fold Rot Y',capsize=5)
 plt.xlabel('OptiTrack Z Position (m)')
 plt.ylabel('Rotation Error (deg)')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
+plt.xlim(xlim)
+plt.ylim(ylim)
 plt.savefig(f"datapictures/errorImages/rot/nfold_rotation_mean_std_{selected}.png")
 
 # Convert to arrays after the loop
@@ -415,25 +422,6 @@ avg_std_n = np.nanmean(nfold_Std, axis=0).T      # shape: (num_bins, 3)
 avg_std_aruco = np.nanmean(aruco_std, axis=0).T  # shape: (num_bins, 3)
 
 offset = 0.2
-
-# Plot only STD (not mean) for all markers in loop_list+10 (nfold_Std) as error bars
-plt.figure()
-plt.errorbar(z_bin_centers - offset, avg_std_n[:, 0], yerr=np.nanstd(nfold_Std[:, 0, :], axis=0), fmt='o', color='r', label='N-fold X Std', capsize=5)
-plt.errorbar(z_bin_centers, avg_std_n[:, 1], yerr=np.nanstd(nfold_Std[:, 1, :], axis=0), fmt='o', color='g', label='N-fold Y Std', capsize=5)
-plt.errorbar(z_bin_centers + offset, avg_std_n[:, 2], yerr=np.nanstd(nfold_Std[:, 2, :], axis=0), fmt='o', color='b', label='N-fold Z Std', capsize=5)
-
-# Add mean for marker 10 (nfold)
-if 'nfold_mean_bins' in locals():
-    plt.plot(z_bin_centers - offset, nfold_mean_bins[0], '--', color='r', label='N-fold Mean X (marker 10)')
-    plt.plot(z_bin_centers, nfold_mean_bins[1], '--', color='g', label='N-fold Mean Y (marker 10)')
-    plt.plot(z_bin_centers + offset, nfold_mean_bins[2], '--', color='b', label='N-fold Mean Z (marker 10)')
-
-plt.xlabel('OptiTrack Z Position (m)')
-plt.ylabel('Average STD Error (m)')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.savefig(f"datapictures/errorImages/std/average_std_nfold_{selected}.png")
 
 # Plot only STD (not mean) for all markers in loop_list (aruco_std) as error bars
 plt.figure()
@@ -452,30 +440,93 @@ plt.ylabel('Average STD Error (m)')
 plt.legend()
 plt.grid(True)
 plt.tight_layout()
+# plt.ylim(-0.5,2.5) #special case for experiment_003, due to 6-7 having trouble
 plt.savefig(f"datapictures/errorImages/std/average_std_aruco_{selected}.png")
+
+ax = plt.gca()
+xlim = ax.get_xlim()
+ylim = ax.get_ylim()
+plt.close()
+
+
+
+
+# Plot only STD (not mean) for all markers in loop_list+10 (nfold_Std) as error bars
+plt.figure()
+plt.errorbar(z_bin_centers - offset, avg_std_n[:, 0], yerr=np.nanstd(nfold_Std[:, 0, :], axis=0), fmt='o', color='r', label='N-fold X Std', capsize=5)
+plt.errorbar(z_bin_centers, avg_std_n[:, 1], yerr=np.nanstd(nfold_Std[:, 1, :], axis=0), fmt='o', color='g', label='N-fold Y Std', capsize=5)
+plt.errorbar(z_bin_centers + offset, avg_std_n[:, 2], yerr=np.nanstd(nfold_Std[:, 2, :], axis=0), fmt='o', color='b', label='N-fold Z Std', capsize=5)
+
+# Add mean for marker 10 (nfold)
+if 'nfold_mean_bins' in locals():
+    plt.plot(z_bin_centers - offset, nfold_mean_bins[0], '--', color='r', label='N-fold Mean X (marker 10)')
+    plt.plot(z_bin_centers, nfold_mean_bins[1], '--', color='g', label='N-fold Mean Y (marker 10)')
+    plt.plot(z_bin_centers + offset, nfold_mean_bins[2], '--', color='b', label='N-fold Mean Z (marker 10)')
+
+plt.xlabel('OptiTrack Z Position (m)')
+plt.ylabel('Average STD Error (m)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.xlim(xlim)
+plt.ylim(ylim)
+# plt.ylim(-0.5,2.5) special case for experiment_003, due to 6-7 having trouble
+plt.savefig(f"datapictures/errorImages/std/average_std_nfold_{selected}.png")
 
 
 # Compute pairwise differences between nfold_Std and aruco_std for each marker in loop_list
-pair_diffs = nfold_Std - aruco_std  # shape: (num_markers, 3, num_bins)
+pair_diffs = np.abs(nfold_Std) - np.abs(aruco_std)  # shape: (num_markers, 3, num_bins)
 avg_pair_diff = np.nanmean(pair_diffs, axis=0)  # shape: (3, num_bins)
 
-print("==== Average STD Difference between Marker Pairs (N-fold - ArUco) per Z Bin ====")
-print(f"{'Bin Range (m)':<14} | {'X':>8} | {'Y':>8} | {'Z':>8}")
-print("-" * 46)
-for i, center in enumerate(z_bin_centers):
-    bin_range = f"{z_bin_centers[i] - 0.5:.1f}-{z_bin_centers[i] + 0.5:.1f}"
-    x, y, z = avg_pair_diff[0, i], avg_pair_diff[1, i], avg_pair_diff[2, i]
-    print(f"{bin_range:<14} | {x:8.4f} | {y:8.4f} | {z:8.4f}")
-
-print("\n==== Average Rotation Error STD Difference (N-fold - ArUco) per Z Bin ====")
-print(f"{'Bin Range (m)':<14} | {'ΔSTD X':>10} | {'ΔSTD Y':>10} | {'ΔSTD Z':>10}")
-print("-" * 50)
-rot_std_pair_diff = avg_nfold_rot_std - avg_aruco_rot_std  # shape: (num_bins, 3)
+print("==== Average STD & Rotation STD Difference (ArUco - N-fold) per Z Bin ====")
+print(f"{'Bin Range (m)':<14} | {'ΔSTD X':>10} | {'ΔSTD Y':>10} | {'ΔSTD Z':>10} | {'ΔRot STD X':>12} | {'ΔRot STD Y':>12} | {'ΔRot STD Z':>12}")
+print("-" * 80)
+rot_std_pair_diff = np.abs(avg_aruco_rot_std) - np.abs(avg_nfold_rot_std)  # shape: (num_bins, 3)
 for i, center in enumerate(z_bin_centers):
     bin_range = f"{center - 0.5:.1f}-{center + 0.5:.1f}"
-    # x is [1], y is [0], z is [2]
-    dx, dy, dz = rot_std_pair_diff[i][1], rot_std_pair_diff[i][0], rot_std_pair_diff[i][2]
-    print(f"{bin_range:<14} | {dx:10.4f} | {dy:10.4f} | {dz:10.4f}")
+    dx, dy, dz = (avg_pair_diff[0, i] * -1, avg_pair_diff[1, i] * -1, avg_pair_diff[2, i] * -1)
+    # Rotation: x is [1], y is [0], z is [2]
+    drx, dry, drz = rot_std_pair_diff[i][1], rot_std_pair_diff[i][0], rot_std_pair_diff[i][2]
+    print(f"{bin_range:<14} | {dx:10.4f} | {dy:10.4f} | {dz:10.4f} | {drx:12.4f} | {dry:12.4f} | {drz:12.4f}")
+
+print("==== Average STD per Z Bin (Aruco) ====")
+print(f"{'Bin Range (m)':<14} | {'STD X':>10} | {'STD Y':>10} | {'STD Z':>10} | {'Rot STD X':>10} | {'Rot STD Y':>10} | {'Rot STD Z':>10}")
+print("-" * 80)
+for i, center in enumerate(z_bin_centers):
+    bin_range = f"{center - 0.5:.1f}-{center + 0.5:.1f}"
+    sx, sy, sz = avg_std_aruco[i]
+    rsy, rsx, rsz = avg_aruco_rot_std[i]  # Note: [Y, X, Z] order in rotation
+    print(f"{bin_range:<14} | {sx:10.4f} | {sy:10.4f} | {sz:10.4f} | {rsx:10.4f} | {rsy:10.4f} | {rsz:10.4f}")
+
+print("\n==== Average STD per Z Bin (N-fold) ====")
+print(f"{'Bin Range (m)':<14} | {'STD X':>10} | {'STD Y':>10} | {'STD Z':>10} | {'Rot STD X':>10} | {'Rot STD Y':>10} | {'Rot STD Z':>10}")
+print("-" * 80)
+for i, center in enumerate(z_bin_centers):
+    bin_range = f"{center - 0.5:.1f}-{center + 0.5:.1f}"
+    sx, sy, sz = avg_std_n[i]
+    rsy, rsx, rsz = avg_nfold_rot_std[i]  # Note: [Y, X, Z] order in rotation
+    print(f"{bin_range:<14} | {sx:10.4f} | {sy:10.4f} | {sz:10.4f} | {rsx:10.4f} | {rsy:10.4f} | {rsz:10.4f}")
+
+# print("\n==== Mean Error (Bias) per Z Bin (Aruco, marker 0) ====")
+# print(f"{'Bin Range (m)':<14} | {'Mean X':>10} | {'Mean Y':>10} | {'Mean Z':>10} | {'Rot Mean X':>12} | {'Rot Mean Y':>12} | {'Rot Mean Z':>12}")
+# print("-" * 80)
+# for i, center in enumerate(z_bin_centers):
+#     bin_range = f"{center - 0.5:.1f}-{center + 0.5:.1f}"
+#     mx, my, mz = aruco_mean_bins[:, i]
+#     # Rotation mean for marker 0 (aruco)
+#     rmy, rmx, rmz = avg_aruco_rot_mean[i]  # Note: [Y, X, Z] order
+#     print(f"{bin_range:<14} | {mx:10.4f} | {my:10.4f} | {mz:10.4f} | {rmx:12.4f} | {rmy:12.4f} | {rmz:12.4f}")
+
+# print("\n==== Mean Error (Bias) per Z Bin (N-fold, marker 10) ====")
+# print(f"{'Bin Range (m)':<14} | {'Mean X':>10} | {'Mean Y':>10} | {'Mean Z':>10} | {'Rot Mean X':>12} | {'Rot Mean Y':>12} | {'Rot Mean Z':>12}")
+# print("-" * 80)
+# for i, center in enumerate(z_bin_centers):
+#     bin_range = f"{center - 0.5:.1f}-{center + 0.5:.1f}"
+#     mx, my, mz = nfold_mean_bins[:, i]
+#     # Rotation mean for marker 10 (nfold)
+#     rmy, rmx, rmz = avg_nfold_rot_mean[i]  # Note: [Y, X, Z] order
+#     print(f"{bin_range:<14} | {mx:10.4f} | {my:10.4f} | {mz:10.4f} | {rmx:12.4f} | {rmy:12.4f} | {rmz:12.4f}")
+
 
 # plt.show()
 plt.close('all')
